@@ -1,0 +1,8 @@
+
+#Standart
+.env
+/node_modules
+/dist
+
+#IDE
+.idea
