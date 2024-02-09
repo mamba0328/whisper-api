@@ -1,4 +1,5 @@
-import { Request, RequestHandler, Response } from "express";
+import { Request, Response } from "express";
+import { Error } from './types/types';
 
 const createError = require('http-errors');
 const express = require('express');
@@ -19,7 +20,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/api/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req:Request, res:Response, next:CallableFunction) {
@@ -27,7 +28,7 @@ app.use(function(req:Request, res:Response, next:CallableFunction) {
 });
 
 // error handler
-app.use(function(err:any, req:Request, res:Response, next:CallableFunction) {
+app.use(function(err:Error, req:Request, res:Response) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -37,4 +38,4 @@ app.use(function(err:any, req:Request, res:Response, next:CallableFunction) {
   res.render('error');
 });
 
-module.exports = app;
+export default app

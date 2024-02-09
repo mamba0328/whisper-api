@@ -4,7 +4,7 @@ var express = require('express');
 var router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req:Request, res:Response, next:CallableFunction) {
+router.get('/', function(req:Request, res:Response, ) {
   res.send('respond with a resource');
 });
 
