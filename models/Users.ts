@@ -1,27 +1,27 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
 const UsersSchema = new Schema({
-    first_name:{type: Schema.Types.String, minLength: 1, maxLength: 100, required:true },
-    last_name:{type: Schema.Types.String, minLength: 1, maxLength: 100, required:true },
-    username:{type: Schema.Types.String, minLength: 1, maxLength: 100, required:true, unique:true },
-    date_of_birth:{type: Schema.Types.Date,},
-    user_img:{type: Schema.Types.String, minLength: 1, maxLength: 120 },
+    first_name: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
+    last_name: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
+    username: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true, unique: true },
+    date_of_birth: { type: Schema.Types.Date },
+    user_img: { type: Schema.Types.String, minLength: 1, maxLength: 120 },
 
-    phone_number:{type:Schema.Types.String, minLength: 6, maxLength: 12, required:true, unique:true },
-    email:{type:Schema.Types.String, minLength: 4, maxLength: 100, required:true, unique:true },
-    password:{type:Schema.Types.String, minLength: 64, required:true },
+    phone_number: { type: Schema.Types.String, minLength: 6, maxLength: 12, required: true, unique: true },
+    email: { type: Schema.Types.String, minLength: 4, maxLength: 100, required: true, unique: true },
+    password: { type: Schema.Types.String, minLength: 64, required: true },
 
-    is_online: { type:Schema.Types.Boolean, default:false },
-    last_time_active:{type: Schema.Types.Date,},
+    is_online: { type: Schema.Types.Boolean, default: false },
+    last_time_active: { type: Schema.Types.Date },
 
-    status: { type: Schema.Types.String, enum: ['active', 'deleted', 'banned'], default: 'active' },
-    created_at: {type: Schema.Types.Date, default: new Date(), },
-    updated_at: {type: Schema.Types.Date,},
-})
+    status: { type: Schema.Types.String, enum: ["active", "deleted", "banned"], default: "active" },
+    created_at: { type: Schema.Types.Date, default: new Date() },
+    updated_at: { type: Schema.Types.Date }
+});
 
-export const Users = mongoose.model('users', UsersSchema);
+export const Users = mongoose.model("users", UsersSchema);
 
 
 // users {
