@@ -2,12 +2,14 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
+const now = new Date();
+
 const ChatsSchema = new Schema({
     is_group_chat: { type: Schema.Types.Boolean, default: false },
     chat_name: { type: Schema.Types.String, minLength: 1, maxLength: 120 },
 
     status: { type: Schema.Types.String, enum: ["active", "deleted"], default: "active" },
-    created_at: { type: Schema.Types.Date, default: new Date() },
+    created_at: { type: Schema.Types.Date, default: now.toISOString() },
     updated_at: { type: Schema.Types.Date }
 });
 

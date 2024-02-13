@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Error } from "../types/types";
 import app from "../app";
-
+require('dotenv').config();
 /**
  * Module dependencies.
  */

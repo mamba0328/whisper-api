@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
+const now = new Date();
+
 const UsersSchema = new Schema({
     first_name: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
     last_name: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
@@ -11,13 +13,13 @@ const UsersSchema = new Schema({
 
     phone_number: { type: Schema.Types.String, minLength: 6, maxLength: 12, required: true, unique: true },
     email: { type: Schema.Types.String, minLength: 4, maxLength: 100, required: true, unique: true },
-    password: { type: Schema.Types.String, minLength: 64, required: true },
+    password: { type: Schema.Types.String, minLength: 60, required: true },
 
     is_online: { type: Schema.Types.Boolean, default: false },
     last_time_active: { type: Schema.Types.Date },
 
     status: { type: Schema.Types.String, enum: ["active", "deleted", "banned"], default: "active" },
-    created_at: { type: Schema.Types.Date, default: new Date() },
+    created_at: { type: Schema.Types.Date, default: now.toISOString() },
     updated_at: { type: Schema.Types.Date }
 });
 
