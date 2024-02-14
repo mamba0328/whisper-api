@@ -9,6 +9,11 @@ import { Error } from "../types/types";
 export const getUsers = [
     query("skip").isNumeric().optional(),
     query("limit").isNumeric().optional(),
+    query("first_name").isString().optional(),
+    query("last_name").isString().optional(),
+    query("username").isString().optional(),
+    query("phone_number").isString().optional(),
+    query("email").isString().optional(),
     asyncHandler(async (req:Request, res:Response) => {
         const {
             first_name,

@@ -8,4 +8,4 @@ router.get("/", function (req:Request, res:Response) {
     res.send("Hello world!");
 });
 
-module.exports = router;
+export default router

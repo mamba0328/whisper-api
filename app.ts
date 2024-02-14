@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Error } from "./types/types";
-import { connectToMongoDB, disconnectFromMongoDB} from "./db/mongooseConnection";
+import { connectToMongoDB, disconnectFromMongoDB } from "./db/mongooseConnection";
 
 const createError = require("http-errors");
 const express = require("express");
@@ -8,9 +8,8 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 
-const indexRouter = require("./routes");
-const usersRouter = require("./routes/users");
-
+import indexRouter from "./routes/index";
+import apiRouter from "./routes/api";
 
 const app = express();
 
@@ -23,7 +22,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(connectToMongoDB);
 
 app.use("/", indexRouter);
-app.use("/api/users", usersRouter);
+app.use("/api", apiRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req:Request, res:Response, next:CallableFunction) {
