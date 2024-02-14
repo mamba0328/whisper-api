@@ -57,6 +57,7 @@ describe("User API Tests", () => {
         it("Returns users", async () => {
             const getUserResponse = await request(app).get("/api/users");
             expect(getUserResponse.body.length).toBeGreaterThan(0);
+            expect(getUserResponse.body[0].username).toEqual(mockUser.username);
         });
     });
 
