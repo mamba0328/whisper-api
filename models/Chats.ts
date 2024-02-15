@@ -7,6 +7,7 @@ const now = new Date();
 const ChatsSchema = new Schema({
     is_group_chat: { type: Schema.Types.Boolean, default: false },
     chat_name: { type: Schema.Types.String, minLength: 1, maxLength: 120 },
+    chat_users: [{ type: Schema.Types.ObjectId, ref: "users" }],
 
     status: { type: Schema.Types.String, enum: ["active", "deleted"], default: "active" },
     created_at: { type: Schema.Types.Date, default: now.toISOString() },

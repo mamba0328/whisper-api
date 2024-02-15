@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const ChatUsersSchema = new Schema({
+const UserWritingSchema = new Schema({
     chat_id: { type: Schema.Types.ObjectId, ref: "chats", required: true },
     user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
     is_writing: { type: Schema.Types.Boolean, default: false }
 });
 
-export const ChatUsers = mongoose.model("chat_users", ChatUsersSchema);
+export const UserWriting = mongoose.model("user_writing", UserWritingSchema);
 
-// сhat_users {
+// user_writing {
 //     id number increments
 //     chat_id int *> chats.id
 //     user_id uuid *>* users.id
