@@ -1,33 +1,33 @@
-import { query, body, validationResult } from "express-validator";
+import { query, body, param } from "express-validator";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 
 import { Users } from "../models/Users";
 import { UserContacts } from "../models/UserContacts";
+
 import { Error } from "../types/types";
+
+import { checkEntityExistsInDataBaseById } from "../helpers/checkEntityExistsInDB";
+import { handleValidationErrors } from "../helpers/handleValidationErrors";
+
 export const getUserContacts = [
     query("skip").isNumeric().optional(),
     query("limit").isNumeric().optional(),
     query("username").isString().optional(),
+    query("contact").isString().optional(),
     asyncHandler(async (req:Request, res:Response) => {
         const {
             username,
+            contact,
             skip,
             limit
         } = req.query;
 
-        const result = validationResult(req);
-        // @ts-ignore
-        const errors = result.errors;
-
-        if (errors.length) {
-            res.status(400).json(errors);
-
-            return;
-        }
+        handleValidationErrors(req, res);
 
         const findOptions = {
-            ...username && { username }
+            ...username && { username },
+            ...contact && { contact }
         };
 
         const users = await UserContacts.find(findOptions).skip(+skip! || 0).limit(+limit! || 50);
@@ -45,15 +45,8 @@ export const postUserContacts = [
             contact_id
         } = req.body;
 
-        const result = validationResult(req);
-        // @ts-ignore
-        const errors = result.errors;
 
-        if (errors.length) {
-            res.status(400).json(errors);
-
-            return;
-        }
+        handleValidationErrors(req, res);
 
         const usersWithIds = await Users.find({ _id: { $in: [user_id, contact_id] } });
 
@@ -83,17 +76,11 @@ export const postUserContacts = [
 ];
 
 export const deleteUserContacts = [
+    param("id").isMongoId().custom(async (id:string) => await checkEntityExistsInDataBaseById(id, UserContacts)),
     asyncHandler(async (req:Request, res:Response) => {
         const { id } = req.params;
 
-        const userContactExists = await UserContacts.findById(id);
-
-        if (!userContactExists) {
-            const error:Error = new Error("Such user contact doesn't exists");
-            error.status = 400;
-
-            throw error;
-        }
+        handleValidationErrors(req, res);
 
         await UserContacts.findByIdAndDelete(id);
 

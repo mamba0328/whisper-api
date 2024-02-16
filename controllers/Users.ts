@@ -1,10 +1,14 @@
-import { query, body, validationResult } from "express-validator";
+import { query, body, param } from "express-validator";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 
 import { Users } from "../models/Users";
+
 import { Error } from "../types/types";
+
+import { checkEntityExistsInDataBaseById } from "../helpers/checkEntityExistsInDB";
+import { handleValidationErrors } from "../helpers/handleValidationErrors";
 
 export const getUsers = [
     query("skip").isNumeric().optional(),
@@ -25,15 +29,7 @@ export const getUsers = [
             skip
         } = req.query;
 
-        const result = validationResult(req);
-        // @ts-ignore
-        const errors = result.errors;
-
-        if (errors.length) {
-            res.status(400).json(errors);
-
-            return;
-        }
+        handleValidationErrors(req, res);
 
         const findOptions = {
             ...first_name && { first_name },
@@ -71,15 +67,7 @@ export const postUsers = [
             password
         } = req.body;
 
-        const result = validationResult(req);
-        // @ts-ignore
-        const errors = result.errors;
-
-        if (errors.length) {
-            res.status(400).json(errors);
-
-            return;
-        }
+        handleValidationErrors(req, res);
 
         const userWithUniqueDataAlreadyExists = await Users.findOne({ $or: [{ "username": username }, { "phone_number": phone_number }, { "email": email }] });
 
@@ -108,6 +96,7 @@ export const postUsers = [
 ];
 
 export const putUsers = [
+    param("id").isMongoId().custom(async (id:string) => await checkEntityExistsInDataBaseById(id, Users)),
     body("first_name").optional().isString().isLength({ min: 1, max: 100 }).escape(),
     body("last_name").optional().isString().isLength({ min: 1, max: 100 }).escape(),
     body("username").optional().isString().isLength({ min: 1, max: 100 }).escape(),
@@ -123,31 +112,17 @@ export const putUsers = [
             user_img
         } = req.body;
 
-        const result = validationResult(req);
-        // @ts-ignore
-        const errors = result.errors;
+        handleValidationErrors(req, res);
 
-        if (errors.length) {
-            res.status(400).json(errors);
-
-            return;
-        }
-
-        const userExists = await Users.findById(id);
-
-        if (!userExists) {
-            const error:Error = new Error("Such user doesn't exists");
-            error.status = 400;
-
-            throw error;
-        }
-
+        const now = new Date();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         await Users.findByIdAndUpdate(id, {
             ...first_name && { first_name },
             ...last_name && { last_name },
             ...username && { username },
             ...date_of_birth && { date_of_birth },
-            ...user_img && { user_img }
+            ...user_img && { user_img },
+            updated_at: now.toISOString()
         });
 
         const updatedUser = await Users.findById(id);
@@ -157,17 +132,11 @@ export const putUsers = [
 ];
 
 export const deleteUsers = [
+    param("id").isMongoId().custom(async (id:string) => await checkEntityExistsInDataBaseById(id, Users)),
     asyncHandler(async (req:Request, res:Response) => {
         const { id } = req.params;
 
-        const userExists = await Users.findById(id);
-
-        if (!userExists) {
-            const error:Error = new Error("Such user doesn't exists");
-            error.status = 400;
-
-            throw error;
-        }
+        handleValidationErrors(req, res);
 
         await Users.findByIdAndDelete(id);
 
