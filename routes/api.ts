@@ -1,7 +1,7 @@
 import express from "express";
 import userRouter from "./users";
 import usersContactsRouter from "./users-contacts";
-// import chatMessagesRouter from "./chat-messages";
+import chatMessagesRouter from "./chat-messages";
 import chatsRouter from "./chats";
 
 const router = express.Router();
@@ -13,7 +13,7 @@ router.use(usersContactsRouter);
 router.use(userRouter);
 
 // api/chat-messages
-// router.use(chatMessagesRouter);
+router.use(chatMessagesRouter);
 
 // api/chats
 router.use(chatsRouter);
