@@ -2,7 +2,8 @@ import request from "supertest";
 import app from "../app";
 
 import { mockUserTaylor, mockUserLayla } from "./consts/mocks";
-import { findAndDeleteUser } from "./helpers/findAndDeleteUser";
+import { createUsers } from "./helpers/createUsers";
+import { findAndDeleteInstance } from "./helpers/findAndDeleteInstance";
 
 
 describe("User API Tests", () => {
@@ -10,21 +11,19 @@ describe("User API Tests", () => {
     let contactId:string;
 
     beforeAll( async () => {
-        const mockUsers = [mockUserTaylor, mockUserLayla];
+        //create users, so we can then create contact with them
+        const createdUsersIds:string[] = await createUsers([mockUserTaylor, mockUserLayla]);
+        usersIds.push(...createdUsersIds);
 
-        await Promise.all(mockUsers.map(async (mockUser) => {
-            const createUserResponse = await request(app).post("/api/users").send(mockUser);
+        //create contact
+        const contactPayload = {user_id: usersIds[0]!, contact_id: usersIds[1]!};
+        const reqUserContact = await request(app).post("/api/user-contacts").send(contactPayload);
 
-            if(createUserResponse.statusCode === 400){
-                await findAndDeleteUser(mockUser.username);
-                const createUserResponse = await request(app).post("/api/users").send(mockUser);
-                usersIds.push(createUserResponse.body._id);
-            }
-
-            usersIds.push(createUserResponse.body._id);
-        }))
-
-        const reqUserContact = await request(app).post("/api/user-contacts").send({user_id: usersIds[0], contact_id: usersIds[1]});
+        if(reqUserContact.statusCode !== 200){ //usually bad response if contact already exists, so we'll delete it
+            await findAndDeleteInstance("user-contacts", contactPayload)
+            const reqUserContact = await request(app).post("/api/user-contacts").send(contactPayload);
+            return contactId = reqUserContact.body._id;
+        }
 
         contactId = reqUserContact.body._id;
     });

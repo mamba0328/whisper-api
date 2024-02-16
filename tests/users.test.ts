@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../app";
 import { mockUserJohn } from "./consts/mocks";
-import { findAndDeleteUser } from "./helpers/findAndDeleteUser";
+import { findAndDeleteInstance } from "./helpers/findAndDeleteInstance";
 
 describe("User API Tests", () => {
     let createdUserId:string;
@@ -10,7 +10,7 @@ describe("User API Tests", () => {
         const createUserResponse = await request(app).post("/api/users").send(mockUserJohn);
 
         if(createUserResponse.statusCode === 400){
-            await findAndDeleteUser(mockUserJohn.username);
+            await findAndDeleteInstance('users', {username: mockUserJohn.username});
             const createUserResponse = await request(app).post("/api/users").send(mockUserJohn);
             return createdUserId = createUserResponse.body._id;
         }
@@ -45,6 +45,12 @@ describe("User API Tests", () => {
                 first_name: 'Layla',
             });
             expect(res.body.first_name).toBe('Layla');
+        })
+        it("Validate wrong userId", async() => {
+            const res = await request(app).put(`/api/users/${createdUserId.slice(0, -2) + 'e'}`).send({
+                first_name: 'Layla',
+            });
+            expect(res.statusCode).toBe(400);
         })
     })
 
