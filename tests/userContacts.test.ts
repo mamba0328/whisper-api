@@ -6,7 +6,7 @@ import { createUsers } from "./helpers/createUsers";
 import { findAndDeleteInstance } from "./helpers/findAndDeleteInstance";
 
 
-describe("User API Tests", () => {
+describe("UserContacts API Tests", () => {
     const usersIds:string[] = [];
     let contactId:string;
 
