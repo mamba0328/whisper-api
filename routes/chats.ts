@@ -1,10 +1,10 @@
 import express from "express";
 
-import { postChat, deleteChat, putChat } from "../controllers/Chats";
+import { getChats, postChat, deleteChat, putChat } from "../controllers/Chats";
 
 const router = express.Router();
 
-// router.get("/chats", getChats);
+router.get("/chats", getChats);
 
 router.post("/chats", postChat);
 

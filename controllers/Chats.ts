@@ -10,7 +10,7 @@ import { Error } from "../types/types";
 import { checkEntityExistsInDataBaseById } from "../helpers/checkEntityExistsInDB";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
 
-export const getUserContacts = [
+export const getChats = [
     query("skip").isNumeric().optional(),
     query("limit").isNumeric().optional(),
     query("chat_users").isString().optional(),
@@ -43,6 +43,7 @@ export const postChat = [
     body("is_group_chat").optional().isBoolean(),
     body("chat_name").optional().isString().escape(),
     body("chat_users.*").isMongoId().bail({ level: "request" }),
+    body("chat_users").if(body("is_group_chat").not().exists()).isArray({ min: 2, max: 2 }),
     body("chat_users").isArray().custom(async (chat_users) => {
         if (!chat_users.length) {
             throw new Error("No empty chat_users");
@@ -62,7 +63,7 @@ export const postChat = [
             const chatAlreadyExists = await Chats.findOne({ chat_users: { $all: chat_users }, is_group_chat: false });
 
             if (chatAlreadyExists) {
-                const error:Error = new Error("Chat already exists");
+                const error: Error = new Error("Chat already exists");
                 error.status = 400;
 
                 throw error;

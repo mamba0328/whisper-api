@@ -3,26 +3,22 @@ import app from "../app";
 
 import { mockUserTaylor, mockUserLayla, mockUserJohn } from "./consts/mocks";
 import { createUsers } from "./helpers/createUsers";
-import {findAndDeleteInstance} from "./helpers/findAndDeleteInstance";
+import {createChat} from "./helpers/createChat";
 
-describe("User API Tests", () => {
+describe("Chat API Tests", () => {
     const usersIds:string[] = [];
+    const personalChatUsers:string[] = [];
+
     let chatId:string;
     let groupChatId:string;
 
     beforeAll( async () => {
         const createdUsers = await createUsers([mockUserTaylor, mockUserLayla, mockUserJohn]);
+
         usersIds.push(...createdUsers);
+        personalChatUsers.push(...usersIds.slice(0, 2));
 
-        const newChat = await request(app).post("/api/chats").send({chat_users: usersIds});
-
-        if(newChat.statusCode !== 200) {//usually bad response if contact already exists, so we'll delete it
-            await findAndDeleteInstance("chats", {chat_users: usersIds, is_group_chat:false})
-            const reqChat = await request(app).post("/api/user-contacts").send({chat_users: usersIds});
-            return chatId = reqChat.body._id;
-        }
-
-        chatId = newChat.body._id;
+        chatId = await createChat(personalChatUsers);
     });
 
     afterAll(async () => {
@@ -38,7 +34,15 @@ describe("User API Tests", () => {
 
     describe("POST /api/chats", () => {
         it("Validation fails for an non-unique chat", async() => {
-            const res = await request(app).post("/api/chats").send({chat_users: usersIds});
+            const res = await request(app).post("/api/chats").send({chat_users: personalChatUsers});
+            expect(res.statusCode).toBe(400);
+        });
+        it("Validation fails for a personal chat with more then 2 users", async() => {
+            const res = await request(app).post("/api/chats").send({chat_users: [...usersIds]});
+            expect(res.statusCode).toBe(400);
+        });
+        it("Validation fails for a personal chat with less then 2 users", async() => {
+            const res = await request(app).post("/api/chats").send({chat_users: [usersIds[0]]});
             expect(res.statusCode).toBe(400);
         });
         it("Validation doesnt allow empty chats", async() => {
