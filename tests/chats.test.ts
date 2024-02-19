@@ -57,6 +57,19 @@ describe("Chat API Tests", () => {
         })
     });
 
+    describe("PUT /api/chats", () => {
+        it("Validation fails for a personal chat", async() => {
+            const res = await request(app).put(`/api/chats/${chatId}`).send({chat_users: usersIds});
+            expect(res.statusCode).toBe(400);
+        });
+        it("Changes applied to the groupchat", async() => {
+            const res = await request(app).put(`/api/chats/${groupChatId}`).send({chat_users: personalChatUsers, chat_name:'new_name'},);
+            expect(res.statusCode).toBe(200);
+            expect(res.body.chat_name).toEqual("new_name");
+            expect(res.body.chat_users).toEqual(personalChatUsers);
+        });
+    });
+
     describe("DEL /api/chats", () => {
         it("Deletes chat", async() => {
             await request(app).del(`/api/chats/${chatId}`).expect(200);
