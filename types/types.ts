@@ -18,3 +18,10 @@ export type User = {
     email: string,
     password?: string,
 }
+
+
+export type Message = {
+    user_id: string,
+    chat_id: string,
+    body: string,
+}

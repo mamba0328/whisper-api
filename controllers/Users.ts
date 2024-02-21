@@ -4,11 +4,13 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 
 import { Users } from "../models/Users";
+import { Chats } from "../models/Chats";
 
 import { Error } from "../types/types";
 
 import { checkEntityExistsInDataBaseById } from "../helpers/checkEntityExistsInDB";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
+
 
 export const getUsers = [
     query("skip").isNumeric().optional(),
@@ -144,3 +146,18 @@ export const deleteUsers = [
     })
 ];
 
+export const updateUserWritesInChat = [
+    param("id").isMongoId().custom(async (id:string) => await checkEntityExistsInDataBaseById(id, Users)),
+    body("chat_id").optional({ nullable: true }).if(body("chat_id").isMongoId()).custom(async (id:string) => await checkEntityExistsInDataBaseById(id, Chats)),
+    asyncHandler(async (req:Request, res:Response) => {
+        const { id } = req.params;
+        const { chat_id } = req.body;
+
+        handleValidationErrors(req, res);
+
+        await Users.findByIdAndUpdate(id, { writes_in_chat: chat_id });
+
+        const updatedUser = await Users.findById(id);
+        res.send(updatedUser);
+    })
+];

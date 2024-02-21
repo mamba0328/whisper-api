@@ -15,6 +15,7 @@ const UsersSchema = new Schema({
     email: { type: Schema.Types.String, minLength: 4, maxLength: 100, required: true, unique: true },
     password: { type: Schema.Types.String, minLength: 60, required: true },
 
+    writes_in_chat: { type: Schema.Types.ObjectId, ref: "chats", default: null },
     is_online: { type: Schema.Types.Boolean, default: false },
     last_time_active: { type: Schema.Types.Date },
 

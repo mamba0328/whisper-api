@@ -2,9 +2,11 @@ import request from "supertest";
 import app from "../app";
 import { mockUserJohn } from "./consts/mocks";
 import { findAndDeleteInstance } from "./helpers/findAndDeleteInstance";
+import { createChat } from "./helpers/createChat";
 
 describe("User API Tests", () => {
     let createdUserId:string;
+    let chatId:string;
 
     beforeAll( async () => {
         const createUserResponse = await request(app).post("/api/users").send(mockUserJohn);
@@ -16,11 +18,15 @@ describe("User API Tests", () => {
         }
 
         createdUserId = createUserResponse.body._id;
+        chatId = await createChat([createdUserId], true);
     });
 
     afterAll(async () => {
         if (createdUserId) {
             await request(app).del(`/api/users/${createdUserId}`);
+        }
+        if (chatId) {
+            await request(app).del(`/api/chats/${chatId}`);
         }
     });
 
@@ -51,6 +57,21 @@ describe("User API Tests", () => {
                 first_name: 'Layla',
             });
             expect(res.statusCode).toBe(400);
+        })
+    })
+
+    describe("PUT /api/users/writes-in-chat", () => {
+        it("Update users writes_in_chat value to chatId", async() => {
+            const res = await request(app).put(`/api/users/writes-in-chat/${createdUserId}`).send({
+                chat_id: chatId,
+            });
+            expect(res.body.writes_in_chat).toBe(chatId);
+        })
+        it("Update users writes_in_chat value to null", async() => {
+            const res = await request(app).put(`/api/users/writes-in-chat/${createdUserId}`).send({
+                chat_id: null,
+            });
+            expect(res.body.writes_in_chat).toBe(null);
         })
     })
 
