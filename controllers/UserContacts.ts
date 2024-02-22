@@ -1,20 +1,13 @@
-import { query, body, param } from "express-validator";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 
-import { Users } from "../models/Users";
 import { UserContacts } from "../models/UserContacts";
 
-import { Error } from "../types/types";
-
-import { checkEntityExistsInDataBaseById } from "../helpers/checkEntityExistsInDB";
+import { getValidators, postValidators, deleteValidators } from "../middleware/validation/userContactsValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
 
 export const getUserContacts = [
-    query("skip").isNumeric().optional(),
-    query("limit").isNumeric().optional(),
-    query("username").isString().optional(),
-    query("contact").isString().optional(),
+    ...getValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const {
             username,
@@ -37,8 +30,7 @@ export const getUserContacts = [
 ];
 
 export const postUserContacts = [
-    body("user_id").isMongoId(),
-    body("contact_id").isMongoId(),
+    ...postValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const {
             user_id,
@@ -47,24 +39,6 @@ export const postUserContacts = [
 
 
         handleValidationErrors(req, res);
-
-        const usersWithIds = await Users.find({ _id: { $in: [user_id, contact_id] } });
-
-        if (usersWithIds.length < 2) {
-            const error:Error = new Error("No such user");
-            error.status = 400;
-
-            throw error;
-        }
-
-        const contactAlreadyExists = await UserContacts.findOne({ user_id, contact_id });
-
-        if (contactAlreadyExists) {
-            const error:Error = new Error("Contact already exists");
-            error.status = 400;
-
-            throw error;
-        }
 
         const newUserContact = await UserContacts.create({
             user_id,
@@ -76,7 +50,7 @@ export const postUserContacts = [
 ];
 
 export const deleteUserContacts = [
-    param("id").isMongoId().custom(async (id:string) => await checkEntityExistsInDataBaseById(id, UserContacts)),
+    ...deleteValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const { id } = req.params;
 
