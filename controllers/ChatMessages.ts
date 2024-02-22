@@ -1,20 +1,16 @@
-import { query, body, param } from "express-validator";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 
 import { Error } from "../types/types";
 
 import { Chats } from "../models/Chats";
-import { Users } from "../models/Users";
 import { ChatMessages } from "../models/ChatMessages";
 
-import { checkEntityExistsInDataBaseById } from "../helpers/checkEntityExistsInDB";
+import { getValidators, postValidators, deleteValidators, putValidators } from "../middleware/validation/chatMessagesValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
 
 export const getChatMessages = [
-    query("skip").isNumeric().optional(),
-    query("limit").isNumeric().optional(),
-    query("chat_id").isMongoId().custom(async (id:string) => checkEntityExistsInDataBaseById(id, Chats)),
+    ...getValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const {
             chat_id,
@@ -30,23 +26,12 @@ export const getChatMessages = [
     })
 ];
 export const postChatMessage = [
-    body("user_id").isMongoId().custom(async (id:string) => checkEntityExistsInDataBaseById(id, Users)),
-    body("chat_id").isMongoId().custom(async (id:string) => checkEntityExistsInDataBaseById(id, Chats)),
-    body("body").isString().trim().isLength({ min: 1, max: 3000 }),
-    // body("img_url").isArray(), ?? img as a blob -> send to the hosting -> receive url?
+    ...postValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const { user_id, chat_id, body } : { user_id: string, chat_id:string, body:string } = req.body;
 
         handleValidationErrors(req, res);
 
-        const chat = await Chats.findById(chat_id);
-
-        // @ts-ignore
-        if (!chat!.chat_users.includes(user_id)) {
-            const error:Error = new Error("Such user don't participate in the chat");
-            error.status = 400;
-            throw error;
-        }
 
         const newMessage = await ChatMessages.create({
             user_id,
@@ -59,9 +44,7 @@ export const postChatMessage = [
 ];
 
 export const putChatMessage = [
-    param("id").isMongoId().custom(async (id:string) => await checkEntityExistsInDataBaseById(id, ChatMessages)),
-    body("body").isString().trim().isLength({ min: 1, max: 3000 }),
-    // body("img_url").isArray(), ?? img as a blob -> send to the hosting -> receive url?
+    ...putValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const { id } = req.params;
         const {
@@ -84,7 +67,7 @@ export const putChatMessage = [
 ];
 
 export const deleteChatMessage = [
-    param("id").isMongoId().custom(async (id:string) => await checkEntityExistsInDataBaseById(id, ChatMessages)),
+    ...deleteValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const { id } = req.params;
 
