@@ -1,4 +1,12 @@
+import { ObjectId } from "mongoose";
+
 export type NodeMiddleware = (req:Request, res:Response, next:CallableFunction) => void | Response
+
+export type Img = {
+    _id:string,
+    filename: string,
+    path: string,
+}
 
 export type Error = {
     message: string,
@@ -8,12 +16,12 @@ export type Error = {
 }
 
 export type User = {
-    _id?: string,
+    _id?: ObjectId | string,
     first_name: string,
     last_name: string,
     username: string,
     date_of_birth?: string,
-    user_img?: string,
+    user_img?: string | Img,
     phone_number: string,
     email: string,
     password?: string,

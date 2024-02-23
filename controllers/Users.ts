@@ -3,9 +3,13 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 
 import { Users } from "../models/Users";
+import { UsersProfileImg } from "../models/UsersProfileImg";
+import { userProfileImgUpload } from "../middleware/multer/userProfileImgUpload";
 
 import { writesInChatValidators, getValidators, postValidators, deleteValidators, putValidators } from "../middleware/validation/usersValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
+import { createEntityForUploadedImg } from "../helpers/createEntityForUploadedImg";
+
 
 export const getUsers = [
     ...getValidators,
@@ -30,7 +34,7 @@ export const getUsers = [
             ...email && { email }
         };
 
-        const users = await Users.find(findOptions).skip(+skip! || 0).limit(+limit! || 50).select("-password");
+        const users = await Users.find(findOptions).skip(+skip! || 0).limit(+limit! || 50).select("-password").populate("user_profile_img_id");
         // const users = await Users.find();
 
         res.send(users);
@@ -38,6 +42,7 @@ export const getUsers = [
 ];
 
 export const postUsers = [
+    userProfileImgUpload.single("user_profile_img"),
     ...postValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const {
@@ -47,11 +52,15 @@ export const postUsers = [
             phone_number,
             email,
             date_of_birth,
-            user_img,
             password
         } = req.body;
 
         handleValidationErrors(req, res);
+
+        let user_profile_img;
+        if (req.file) {
+            user_profile_img = await createEntityForUploadedImg(req.file, UsersProfileImg);
+        }
 
         const encryptedPassword = await bcrypt.hash(<string>password, 10);
 
@@ -62,15 +71,19 @@ export const postUsers = [
             phone_number,
             email,
             date_of_birth,
-            user_img,
-            password: encryptedPassword
+            password: encryptedPassword,
+            ...user_profile_img && { user_profile_img_id: user_profile_img._id }
         });
+
+        // @ts-ignore
+        newUser.user_profile_img_id = user_profile_img;
 
         res.send(newUser);
     })
 ];
 
 export const putUsers = [
+    userProfileImgUpload.single("user_profile_img"),
     ...putValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const { id } = req.params;
@@ -79,10 +92,14 @@ export const putUsers = [
             last_name,
             username,
             date_of_birth,
-            user_img
         } = req.body;
 
         handleValidationErrors(req, res);
+
+        let user_profile_img;
+        if (req.file) {
+            user_profile_img = await createEntityForUploadedImg(req.file, UsersProfileImg);
+        }
 
         const now = new Date();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -91,11 +108,11 @@ export const putUsers = [
             ...last_name && { last_name },
             ...username && { username },
             ...date_of_birth && { date_of_birth },
-            ...user_img && { user_img },
+            ...user_profile_img && { user_profile_img_id: user_profile_img._id },
             updated_at: now.toISOString()
         });
 
-        const updatedUser = await Users.findById(id);
+        const updatedUser = await Users.findById(id).populate("user_profile_img_id");
 
         res.send(updatedUser);
     })
