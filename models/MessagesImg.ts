@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const now = new Date();
 
-const UsersProfileImgSchema = new Schema({
+const MessagesImgSchema = new Schema({
     filename: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
     path: { type: Schema.Types.String, minLength: 1, maxLength: 500, required: true },
     mimetype: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
@@ -12,10 +12,10 @@ const UsersProfileImgSchema = new Schema({
     updated_at: { type: Schema.Types.Date }
 });
 
-export const UsersProfileImg = mongoose.model("users_profile_img", UsersProfileImgSchema);
+export const MessagesImg = mongoose.model("messages_img", MessagesImgSchema);
 
 
-// users_profile_img {
+// messages_img {
 //     id number increments
 //     filename string
 //     path string

@@ -9,6 +9,7 @@ import { userProfileImgUpload } from "../middleware/multer/userProfileImgUpload"
 import { writesInChatValidators, getValidators, postValidators, deleteValidators, putValidators } from "../middleware/validation/usersValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
 import { createEntityForUploadedImg } from "../helpers/createEntityForUploadedImg";
+import { deleteFile } from "../helpers/deleteFile";
 
 
 export const getUsers = [
@@ -91,7 +92,7 @@ export const putUsers = [
             first_name,
             last_name,
             username,
-            date_of_birth,
+            date_of_birth
         } = req.body;
 
         handleValidationErrors(req, res);
@@ -103,14 +104,19 @@ export const putUsers = [
 
         const now = new Date();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        await Users.findByIdAndUpdate(id, {
+        const previousEntity = await Users.findByIdAndUpdate(id, {
             ...first_name && { first_name },
             ...last_name && { last_name },
             ...username && { username },
             ...date_of_birth && { date_of_birth },
             ...user_profile_img && { user_profile_img_id: user_profile_img._id },
             updated_at: now.toISOString()
-        });
+        }).populate("user_profile_img_id");
+
+        const userProfileImgWasUpdated = user_profile_img && previousEntity!.user_profile_img_id;
+        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        userProfileImgWasUpdated && deleteFile(previousEntity.user_profile_img_id.path);
 
         const updatedUser = await Users.findById(id).populate("user_profile_img_id");
 

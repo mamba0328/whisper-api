@@ -16,7 +16,7 @@ export type Error = {
 }
 
 export type User = {
-    _id?: ObjectId | string,
+    _id?: string,
     first_name: string,
     last_name: string,
     username: string,

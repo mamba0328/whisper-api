@@ -7,9 +7,7 @@ type fileData = {
 export const createEntityForUploadedImg = async (file:any, MongooseModel:any):Promise<fileData> => {
     const { filename, path, mimetype } = file;
 
-    const pathFromProjectRoot = path.split("whisper").at(-1);
-
-    const newEntity:fileData = await MongooseModel.create({ filename, path: pathFromProjectRoot, mimetype });
+    const newEntity:fileData = await MongooseModel.create({ filename, path, mimetype });
 
     return newEntity;
 };

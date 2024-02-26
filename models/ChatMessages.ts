@@ -9,10 +9,10 @@ const ChatMessagesSchema = new Schema({
     user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
 
     body: { type: Schema.Types.String, minLength: 1, maxLength: 3000, required: true },
-    img_url: { type: Schema.Types.String, minLength: 1, maxLength: 120 },
+    message_img_id: { type: Schema.Types.ObjectId, ref: "messages_img" },
     status: { type: Schema.Types.String, enum: ["new", "edited", "deleted"], default: "new" },
 
-    created_at: { type: Schema.Types.Date, default: now.toISOString()},
+    created_at: { type: Schema.Types.Date, default: now.toISOString() },
     updated_at: { type: Schema.Types.Date }
 });
 
