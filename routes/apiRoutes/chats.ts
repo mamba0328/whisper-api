@@ -1,6 +1,6 @@
 import express from "express";
 
-import { getChats, postChat, deleteChat, putChat } from "../controllers/Chats";
+import { getChats, postChat, deleteChat, putChat } from "../../controllers/Chats";
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { deleteMessageSeenBy, getMessageSeenBy, postMessageSeenBy } from "../controllers/MessageSeenBy";
+import { deleteMessageSeenBy, getMessageSeenBy, postMessageSeenBy } from "../../controllers/MessageSeenBy";
 
 const router = express.Router();
 

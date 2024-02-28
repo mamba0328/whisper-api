@@ -1,6 +1,6 @@
 import express from "express";
 
-import { getChatMessages, postChatMessage, putChatMessage, deleteChatMessage } from "../controllers/ChatMessages";
+import { getChatMessages, postChatMessage, putChatMessage, deleteChatMessage } from "../../controllers/ChatMessages";
 
 const router = express.Router();
 
