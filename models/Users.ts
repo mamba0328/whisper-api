@@ -19,6 +19,7 @@ const UsersSchema = new Schema({
     is_online: { type: Schema.Types.Boolean, default: false },
     last_time_active: { type: Schema.Types.Date },
 
+    is_admin: { type: Schema.Types.Boolean, default: false },
     status: { type: Schema.Types.String, enum: ["active", "deleted", "banned"], default: "active" },
     created_at: { type: Schema.Types.Date, default: now.toISOString() },
     updated_at: { type: Schema.Types.Date }
