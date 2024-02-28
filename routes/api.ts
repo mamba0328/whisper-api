@@ -1,11 +1,15 @@
 import express from "express";
-import userRouter from "./users";
-import usersContactsRouter from "./users-contacts";
-import chatMessagesRouter from "./chat-messages";
-import chatsRouter from "./chats";
-import messageSeenByRouter from "./message-seen-by";
+import userRouter from "./apiRoutes/users";
+import usersContactsRouter from "./apiRoutes/users-contacts";
+import chatMessagesRouter from "./apiRoutes/chat-messages";
+import chatsRouter from "./apiRoutes/chats";
+import messageSeenByRouter from "./apiRoutes/message-seen-by";
+import { isAuth } from "../middleware/authentication /isAuth";
 
 const router = express.Router();
+
+// @ts-ignore
+router.use(isAuth);
 
 // api/user-contacts
 router.use(usersContactsRouter);
