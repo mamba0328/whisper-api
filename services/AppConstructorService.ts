@@ -12,6 +12,7 @@ import passport from "../passport/passport";
 import indexRouter from "../routes";
 import signInRouter from "../routes/sign-in";
 import signUpRouter from "../routes/sign-up";
+import signOutRouter from "../routes/sign-out";
 import apiRouter from "../routes/api";
 
 import { connectToMongoDB, disconnectFromMongoDB } from "../db/mongooseConnection";
@@ -74,6 +75,7 @@ export class AppConstructorService {
         this.app.use("/", indexRouter);
         this.app.use("/sign-in", signInRouter);
         this.app.use("/sign-up", signUpRouter);
+        this.app.use("/sign-out", signOutRouter);
     };
 
     private _setupProtectedRoutes = () => {
