@@ -46,6 +46,10 @@ const authUserIsAdmin = (user:User) => {
 };
 
 const userInRequestMatchesAuthUser = (user_id:string, user:User) => {
+    if (user.is_admin) {
+        return true;
+    }
+
     if (user_id === user._id.toString()) {
         return true;
     }

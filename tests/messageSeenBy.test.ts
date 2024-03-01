@@ -39,7 +39,6 @@ describe("MessageSeenBy API Tests", () => {
         });
         it("Creates an entity", async() => {
             const res = await testSession.post("/api/message-seen-by").send({ user_id:usersId, message_id:messageId });
-            console.log(res.body)
             expect(res.statusCode).toBe(200);
             expect(res.body.user_id).toEqual(usersId);
             messageSeenById=res.body._id;

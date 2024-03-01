@@ -8,6 +8,16 @@ export const mockAdmin = {
     is_admin: true,
 };
 
+export const mockNewUser = {
+    first_name: "New",
+    last_name: "User",
+    username: "new_user123",
+    date_of_birth: "1990-01-01",
+    user_img: "https://example.com/avatar.jpg",
+    phone_number: "1234567231",
+    email: "new.user@example.com",
+    password: "strongpassword123"
+};
 export const mockUserJohn = {
     first_name: "John",
     last_name: "Doe",
