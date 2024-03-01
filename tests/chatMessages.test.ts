@@ -1,70 +1,62 @@
-import request from "supertest";
+// @ts-ignore
+import session from "supertest-session";
+import { Types } from "mongoose";
 import app from "../app";
 
-import { mockUserTaylor, mockUserLayla, mockUserJohn, } from "./consts/mocks";
-import { createUsers } from "./helpers/createUsers";
-import { createChat } from "./helpers/createChat";
 
-import { Message } from "../types/types";
+import { Chat, MessagePayload } from "../types/types";
+import { mockAdmin } from "./consts/mocks";
 
 describe("ChatMessages API Tests", () => {
-    const usersIds:string[] = [];
-    const personalChatUsers:string[] = [];
-    let chatPayload:Message;
+    const testSession = session(app);
 
-    let chatId:string;
-    let groupChatId:string;
+    let chatId:Types.ObjectId;
+    let groupChatId:Types.ObjectId;
+    const chatPayload:MessagePayload = { body:"Message", user_id: null, chat_id: null, }
 
-    let messageId:string;
-    let groupChatMessageId:string;
+    let messageId:Types.ObjectId;
+    let groupChatMessageId:Types.ObjectId;
 
-    beforeAll( async () => {
-        const createdUsers = await createUsers([mockUserTaylor, mockUserLayla, mockUserJohn]);
+    beforeAll(async () => {
+        await testSession.post("/sign-in").send({ identity_field: mockAdmin.username, password: mockAdmin.password });
 
-        usersIds.push(...createdUsers);
-        personalChatUsers.push(...createdUsers.slice(0, -1));
+        const {body:userResponse} = await testSession.get("/api/users/?username=admin");
+        const user_id = userResponse[0]._id;
 
-        chatId = await createChat(personalChatUsers);
-        groupChatId = await createChat(usersIds, true);
+        const {body:chatResponse}  = await testSession.get(`/api/chats/?chat_users=${user_id}`)
 
-        chatPayload = { user_id: personalChatUsers[0]!, chat_id: chatId , body:'Message'}
-    });
+        groupChatId = chatResponse.find((chat:Chat) => chat.is_group_chat)._id;
+        chatId = chatResponse.find((chat:Chat) => !chat.is_group_chat)._id;
+
+        chatPayload.user_id = user_id;
+        chatPayload.chat_id = chatId;
+    })
 
     afterAll(async () => {
-        if (usersIds.length) {
-            await Promise.all(usersIds.map( async (userId) => {
-                await request(app).del(`/api/users/${userId}`);
-            }))
-        }
-        if(chatId){
-            await request(app).del(`/api/chats/${chatId}`);
-        }
-        if(groupChatId){
-            await request(app).del(`/api/chats/${groupChatId}`);
-        }
-    });
+        await testSession.post("/sign-out").send()
+    })
 
     describe("POST /api/chat-messages", () => {
         it("Validation fails for a blank message", async() => {
-            const res = await request(app).post("/api/chat-messages").send({...chatPayload, body: '   '});
+            const res = await testSession.post("/api/chat-messages").send({...chatPayload, body: '   '});
             expect(res.statusCode).toBe(400);
         });
         it("Validation fails for a bad user", async() => {
-            const res = await request(app).post("/api/chat-messages").send({...chatPayload, user_id:chatPayload.user_id.slice(0, -2) + '1'});
+            const res = await testSession.post("/api/chat-messages").send({...chatPayload, user_id: `${chatPayload.user_id}`.slice(0, -2) + '1'});
             expect(res.statusCode).toBe(400);
         });
         it("Validation fails for a bad chat", async() => {
-            const res = await request(app).post("/api/chat-messages").send({...chatPayload, chat_id:chatPayload.chat_id.slice(0, -2) + '1'});
+            const res = await testSession.post("/api/chat-messages").send({...chatPayload, chat_id: `${chatPayload.chat_id}`.slice(0, -2) + '1'});
             expect(res.statusCode).toBe(400);
         });
         it("Creates message in personal-chat", async() => {
-            const res = await request(app).post("/api/chat-messages").send(chatPayload);
-            messageId = res.body._id;
+            const res = await testSession.post("/api/chat-messages").send(chatPayload);
             expect(res.statusCode).toBe(200);
             expect(res.body.body).toEqual(chatPayload.body);
+            messageId = res.body._id;
         })
         it("Creates message in group-chat", async() => {
-            const res = await request(app).post("/api/chat-messages").send({...chatPayload, chat_id: groupChatId});
+            const res = await testSession.post("/api/chat-messages").send({...chatPayload, chat_id: groupChatId});
             groupChatMessageId = res.body._id;
             expect(res.statusCode).toBe(200);
             expect(res.body.body).toEqual(chatPayload.body);
@@ -73,12 +65,12 @@ describe("ChatMessages API Tests", () => {
 
     describe("GET /api/chat-messages", () => {
         it("Return chat messages", async() => {
-            const res = await request(app).get(`/api/chat-messages/?chat_id=${chatId}`);
+            const res = await testSession.get(`/api/chat-messages/?chat_id=${chatId}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.length).toBeGreaterThan(0);
         });
-        it("Return gtoup-chat messages", async() => {
-            const res = await request(app).get(`/api/chat-messages/?chat_id=${groupChatId}`);
+        it("Return group-chat messages", async() => {
+            const res = await testSession.get(`/api/chat-messages/?chat_id=${groupChatId}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.length).toBeGreaterThan(0);
         });
@@ -86,27 +78,26 @@ describe("ChatMessages API Tests", () => {
 
     describe("PUT /api/chat-messages", () => {
         it("Edit chat messages", async() => {
-            const res = await request(app).put(`/api/chat-messages/${messageId}`).send({body: "new body"});
+            const res = await testSession.put(`/api/chat-messages/${messageId}`).send({body: "new body"});
             expect(res.statusCode).toBe(200);
             expect(res.body.body).toEqual("new body");
         });
         it("Edit group-chat messages", async() => {
-            const res = await request(app).put(`/api/chat-messages/${groupChatMessageId}`).send({body: "new body"});
+            const res = await testSession.put(`/api/chat-messages/${groupChatMessageId}`).send({body: "new body"});
             expect(res.statusCode).toBe(200);
             expect(res.body.body).toEqual("new body");
         });
     })
 
-
     describe("DEL /api/chat-messages", () => {
         it("Deletes message", async() => {
-            await request(app).del(`/api/chat-messages/${messageId}`).expect(200);
+            await testSession.delete(`/api/chat-messages/${messageId}`).expect(200);
         })
         it("Deletes group-chat message", async() => {
-            await request(app).del(`/api/chat-messages/${groupChatMessageId}`).expect(200);
+            await testSession.delete(`/api/chat-messages/${groupChatMessageId}`).expect(200);
         })
         // it("No chat messages left", async() => {
-        //     await request(app).del(`/api/user-contacts/${contactId}`).expect(200);
+        //     await testSession.del(`/api/user-contacts/${contactId}`).expect(200);
         // })
     })
 })
