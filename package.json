@@ -6,7 +6,8 @@
     "test": "cross-env NODE_ENV=test jest --testTimeout=10000 --detectOpenHandles --forceExit",
     "build": "npx tsc",
     "start": "node dist/bin/www.js",
-    "dev": "nodemon bin/www.ts"
+    "dev": "nodemon bin/www.ts",
+    "seed": "ts-node-esm tests/seed/seedDB.ts"
   },
   "dependencies": {
     "axios": "^1.6.7",
@@ -46,6 +47,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.56.0",
     "nodemon": "^3.0.3",
+    "supertest-session": "^5.0.1",
     "ts-jest": "^29.1.2",
     "typescript": "^5.3.3"
   }
