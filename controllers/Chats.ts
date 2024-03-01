@@ -21,7 +21,7 @@ export const getChats = [
 
         const findOptions = {
             // @ts-ignore
-            ...chat_users && { chat_users: chat_users.split(",") },
+            ...chat_users && { chat_users: { "$in": chat_users.split(",") } },
             ...chat_name && { chat_name },
             ...is_group_chat && { is_group_chat }
         };
