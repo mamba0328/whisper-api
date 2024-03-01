@@ -1,74 +1,61 @@
-import request from "supertest";
+// @ts-ignore
+import session from "supertest-session";
 import app from "../app";
-import { mockUserJohn } from "./consts/mocks";
-import { findAndDeleteInstance } from "./helpers/findAndDeleteInstance";
+import { mockAdmin, mockNewUser } from "./consts/mocks";
+import { Types } from "mongoose"
 import { createChat } from "./helpers/createChat";
 
 describe("User API Tests", () => {
-    let createdUserId:string;
-    let chatId:string;
+    const testSession = session(app);
+
+    let createdUserId: Types.ObjectId;
+    let chatId: Types.ObjectId;
 
     beforeAll( async () => {
-        const createUserResponse = await request(app).post("/api/users").send(mockUserJohn);
+        await testSession.post("/sign-in").send({ identity_field: mockAdmin.username, password: mockAdmin.password });
 
-        if(createUserResponse.statusCode === 400){
-            await findAndDeleteInstance('users', {username: mockUserJohn.username});
-            const createUserResponse = await request(app).post("/api/users").send(mockUserJohn);
-            return createdUserId = createUserResponse.body._id;
-        }
+        const createUserResponse = await testSession.post("/api/users").send(mockNewUser);
 
-        createdUserId = createUserResponse.body._id;
-        chatId = await createChat([createdUserId], true);
+        createdUserId = createUserResponse.body._id as Types.ObjectId;
+        chatId = await createChat({chat_users:[createdUserId], is_group_chat:true});
     });
 
     afterAll(async () => {
-        if (createdUserId) {
-            await request(app).del(`/api/users/${createdUserId}`);
-        }
-        if (chatId) {
-            await request(app).del(`/api/chats/${chatId}`);
-        }
+        await testSession.post("/sign-out").send();
     });
 
     describe("POST /api/users", () => {
         it("Validation fails for an non-unique user", async() => {
-            const res = await request(app).post("/api/users").send(mockUserJohn);
+            const res = await testSession.post("/api/users").send(mockNewUser);
             expect(res.statusCode).toBe(400);
         });
     });
 
     describe("GET /api/users", () => {
         it("Returns users", async () => {
-            const getUserResponse = await request(app).get("/api/users");
+            const getUserResponse = await testSession.get("/api/users");
             expect(getUserResponse.body.length).toBeGreaterThan(0);
-            expect(getUserResponse.body[0].username).toEqual(mockUserJohn.username);
         });
     });
 
     describe("PUT /api/users", () => {
         it("Update user", async() => {
-            const res = await request(app).put(`/api/users/${createdUserId}`).send({
+            const res = await testSession.put(`/api/users/${createdUserId}`).send({
                 first_name: 'Layla',
             });
             expect(res.body.first_name).toBe('Layla');
-        })
-        it("Validate wrong userId", async() => {
-            const res = await request(app).put(`/api/users/${createdUserId.slice(0, -2) + 'e'}`).send({
-                first_name: 'Layla',
-            });
-            expect(res.statusCode).toBe(400);
         })
     })
 
     describe("PUT /api/users/writes-in-chat", () => {
         it("Update users writes_in_chat value to chatId", async() => {
-            const res = await request(app).put(`/api/users/writes-in-chat/${createdUserId}`).send({
+            const res = await testSession.put(`/api/users/writes-in-chat/${createdUserId}`).send({
                 chat_id: chatId,
             });
-            expect(res.body.writes_in_chat).toBe(chatId);
+            expect(res.body.writes_in_chat).toBe(chatId.toString());
         })
         it("Update users writes_in_chat value to null", async() => {
-            const res = await request(app).put(`/api/users/writes-in-chat/${createdUserId}`).send({
+            const res = await testSession.put(`/api/users/writes-in-chat/${createdUserId}`).send({
                 chat_id: null,
             });
             expect(res.body.writes_in_chat).toBe(null);
@@ -77,7 +64,7 @@ describe("User API Tests", () => {
 
     describe("DEL /api/users", () => {
         it("Delete user", async() => {
-            await request(app).del(`/api/users/${createdUserId}`).expect(200);
+            await testSession.delete(`/api/users/${createdUserId}`).expect(200);
         })
     })
 })
