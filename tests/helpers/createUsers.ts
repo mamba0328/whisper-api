@@ -1,28 +1,19 @@
-import request from "supertest";
-import app from "../../app";
-import { findAndDeleteInstance } from "./findAndDeleteInstance";
-import { User } from "../../types/types";
+import { Types } from "mongoose";
+import bcrypt from "bcryptjs";
 
-type UserResponse = {
-    body: User
-    statusCode: number,
-}
+import { Users } from "../../models/Users";
+import { User, UserPayload } from "../../types/types";
 
-export const createUsers = async (users: User[]):Promise<string[]> => {
+export const createUsers = async (users: UserPayload[]):Promise<Types.ObjectId[]> => {
     try {
-        const usersIds:string[] = [];
+        const usersIds:Types.ObjectId[] = [];
         await Promise.all(users.map(async (mockUser) => {
+            mockUser.password = await bcrypt.hash(mockUser.password, 10);
+
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const createUserResponse:UserResponse = await request(app).post("/api/users").send(mockUser);
+            const user = await Users.create(mockUser);
 
-            if (createUserResponse.statusCode === 400) {
-                await findAndDeleteInstance("users", { username: mockUser.username });
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                const createUserResponse:UserResponse = await request(app).post("/api/users").send(mockUser);
-                return usersIds.push(createUserResponse.body._id!);
-            }
-
-            usersIds.push(createUserResponse.body._id!);
+            usersIds.push(user._id);
         }));
 
         return usersIds;

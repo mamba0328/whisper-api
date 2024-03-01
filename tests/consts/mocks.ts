@@ -1,3 +1,13 @@
+export const mockAdmin = {
+    first_name: "admin",
+    last_name: "admin",
+    username: "admin",
+    phone_number: "12345641231",
+    email: "admin.admin@example.com",
+    password: "adminadmin",
+    is_admin: true,
+};
+
 export const mockUserJohn = {
     first_name: "John",
     last_name: "Doe",

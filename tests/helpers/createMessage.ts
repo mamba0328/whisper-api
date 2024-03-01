@@ -1,16 +1,11 @@
-import request from "supertest";
-import app from "../../app";
+import { MessagePayload } from "../../types/types";
 
-export const createMessage = async (chatId:string, userId:string, body:string) => {
-    let chatMessageId:string;
+import { ChatMessages } from "../../models/ChatMessages";
 
-    try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const newMessage = await request(app).post("/api/chat-messages").send({ chat_id: chatId, user_id: userId, body });
-        chatMessageId = newMessage.body._id;
-        return chatMessageId;
-    } catch (error) {
-        console.log(error);
-        return "";
-    }
+
+export const createMessage = async (messagePayload:MessagePayload) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const newMessage = await ChatMessages.create(messagePayload);
+
+    return newMessage._id;
 };

@@ -1,6 +1,4 @@
-import { ObjectId } from "mongoose";
-
-export type NodeMiddleware = (req:Request, res:Response, next:CallableFunction) => void | Response
+import { Types } from "mongoose";
 
 export type Img = {
     _id:string,
@@ -16,20 +14,44 @@ export type Error = {
 }
 
 export type User = {
-    _id?: string,
+    _id: Types.ObjectId,
     first_name: string,
     last_name: string,
     username: string,
     date_of_birth?: string,
-    user_img?: string | Img,
+    user_profile_img_id?: string | Img,
+    is_admin?: boolean,
     phone_number: string,
     email: string,
     password?: string,
 }
 
+export type UserPayload = {
+    first_name?: string,
+    last_name?: string,
+    username: string,
+    date_of_birth?: string,
+    user_profile_img?: File,
+    is_admin?: boolean,
+    phone_number: string,
+    email: string,
+    password: string,
+}
 
-export type Message = {
-    user_id: string,
-    chat_id: string,
+export type ChatPayload = {
+    chat_users:Types.ObjectId[],
+    is_group_chat?:boolean
+}
+
+export type Chat= {
+    _id: Types.ObjectId[],
+    chat_users:Types.ObjectId[],
+    is_group_chat?:boolean
+}
+
+
+export type MessagePayload = {
+    user_id: Types.ObjectId | null,
+    chat_id: Types.ObjectId | null,
     body: string,
 }
