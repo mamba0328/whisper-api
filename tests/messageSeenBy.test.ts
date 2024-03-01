@@ -1,66 +1,58 @@
-import request from "supertest";
+// @ts-ignore
+import session from "supertest-session";
 import app from "../app";
+import { mockAdmin } from "./consts/mocks";
 
-import { mockUserTaylor, mockUserLayla, } from "./consts/mocks";
-import { createUsers } from "./helpers/createUsers";
-import { createChat } from "./helpers/createChat";
-import { createMessage } from "./helpers/createMessage";
 
 describe("MessageSeenBy API Tests", () => {
-    const usersIds:string[] = [];
+    const testSession = session(app);
 
-    let chatId:string;
+    let usersId:string;
     let messageId:string;
     let messageSeenById:string;
 
     beforeAll( async () => {
-        const createdUsers = await createUsers([mockUserTaylor, mockUserLayla]);
+        await testSession.post("/sign-in").send({ identity_field: mockAdmin.username, password: mockAdmin.password });
 
-        usersIds.push(...createdUsers);
+        const { body:userResponse } = await testSession.get("/api/users/?username=admin");
+        usersId = userResponse[0]._id;
 
-        chatId = await createChat(usersIds);
+        const { body:chatResponse } = await testSession.get(`/api/chats/?chat_users=${usersId}`);
+        const chatId = chatResponse[0]._id;
 
-        messageId = await createMessage(chatId, usersIds[0]!, 'Hello Layla!');
+        const { body:messageResponse } = await testSession.get(`/api/chat-messages/?chat_id=${chatId}`);
+        messageId = messageResponse[0]._id;
     });
 
     afterAll(async () => {
-        if (usersIds.length) {
-            await Promise.all(usersIds.map( async (userId) => {
-                await request(app).del(`/api/users/${userId}`);
-            }))
-        }
-        if(chatId){
-            await request(app).del(`/api/chats/${chatId}`);
-        }
-        if(messageId){
-            await request(app).del(`/api/chat-messages/${messageId}`);
-        }
+        await testSession.post("/sign-out").send()
     });
 
     describe("POST /api/message-seen-by", () => {
         it("Validation fails for a no user", async() => {
-            const res = await request(app).post("/api/message-seen-by").send({ message_id:messageId });
+            const res = await testSession.post("/api/message-seen-by").send({ message_id:messageId });
             expect(res.statusCode).toBe(400);
         });
         it("Validation fails for a no message", async() => {
-            const res = await request(app).post("/api/message-seen-by").send({ user_id:usersIds[0] });
+            const res = await testSession.post("/api/message-seen-by").send({ user_id:usersId });
             expect(res.statusCode).toBe(400);
         });
         it("Creates an entity", async() => {
-            const res = await request(app).post("/api/message-seen-by").send({ user_id:usersIds[1], message_id:messageId });
+            const res = await testSession.post("/api/message-seen-by").send({ user_id:usersId, message_id:messageId });
+            console.log(res.body)
             expect(res.statusCode).toBe(200);
-            expect(res.body.user_id).toEqual(usersIds[1]);
+            expect(res.body.user_id).toEqual(usersId);
             messageSeenById=res.body._id;
         });
         it("Validation fails for existed entity", async() => {
-            const res = await request(app).post("/api/message-seen-by").send({ user_id:usersIds[1], message_id:messageId });
+            const res = await testSession.post("/api/message-seen-by").send({ user_id:usersId, message_id:messageId });
             expect(res.statusCode).toBe(400);
         });
     });
 
     describe("GET /api/message-seen-by", () => {
         it("Return message-seen-by", async() => {
-            const res = await request(app).get(`/api/message-seen-by/?message_id=${messageId}`);
+            const res = await testSession.get(`/api/message-seen-by/?message_id=${messageId}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.length).toBeGreaterThan(0);
         });
@@ -69,7 +61,7 @@ describe("MessageSeenBy API Tests", () => {
 
     describe("DEL /api/message-seen-by", () => {
         it("Deletes message-seen-by", async() => {
-            await request(app).del(`/api/message-seen-by/${messageSeenById}`).expect(200);
+            await testSession.delete(`/api/message-seen-by/${messageSeenById}`).expect(200);
         })
     })
 })
