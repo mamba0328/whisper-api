@@ -21,7 +21,7 @@ describe("Chat API Tests", () => {
         const { body:usersResponse }:{ body: User[] } = await testSession.get('/api/users/');
 
         usersIds.push(...usersResponse.map(user => user._id));
-        personalChatUsers.push(usersResponse[0]!._id, usersResponse[1]!._id);
+        personalChatUsers.push(usersResponse[0]!._id, usersResponse[2]!._id);
     });
 
     afterAll(async () => {

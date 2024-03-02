@@ -7,7 +7,7 @@ import { createMessage } from "../helpers/createMessage";
 import { mockUserJohn, mockUserTaylor, mockUserLayla, mockAdmin } from "../consts/mocks";
 import mongoose, { Types } from "mongoose";
 
-const seedDB = async () => {
+const testSeedDB = async () => {
     const usersIds:Types.ObjectId[] = [];
     const personalChatUsers:Types.ObjectId[] = [];
 
@@ -34,6 +34,7 @@ const seedDB = async () => {
 
 void (async () => {
     await mongoose.connect(process.env.TEST_DB_MONGO_URI!);
-    await seedDB();
+    await testSeedDB();
+    return mongoose.disconnect();
 })();
 
