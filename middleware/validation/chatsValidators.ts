@@ -9,7 +9,7 @@ import { Error, User } from "../../types/types";
 export const getValidators = [
     query("skip").isNumeric().optional(),
     query("limit").isNumeric().optional(),
-    query("chat_users").isString().optional(),
+    query("chat_users").isString(),
     query("chat_name").isString().optional(),
     query("is_group_chat").isString().optional(),
     query("chat_users").custom((chat_users:string[], { req }) => authenticatedUserAmongChatUsers(chat_users, req.user as User))
@@ -44,6 +44,8 @@ const allChatUsersAreValid = async (chat_users:Types.ObjectId[]) => {
         throw new Error("No empty chat_users");
     }
     await Promise.all([chat_users.map(async (id:Types.ObjectId) => await checkEntityExistsInDataBaseById(id, Users))]);
+
+    return true;
 };
 
 const checkPersonalChatAlreadyExists = async (chat_users:Types.ObjectId[], is_group_chat:boolean) => {
@@ -56,6 +58,8 @@ const checkPersonalChatAlreadyExists = async (chat_users:Types.ObjectId[], is_gr
         error.status = 400;
         throw error;
     }
+
+    return true;
 };
 
 const authenticatedUserAmongChatUsers = (chat_users:string[], user:User) => {
@@ -68,6 +72,8 @@ const authenticatedUserAmongChatUsers = (chat_users:string[], user:User) => {
         error.status = 400;
         throw error;
     }
+
+    return true;
 };
 
 const authUserHasAccessToTheChatByChatId = async (chat_id:Types.ObjectId, user:User) => {
@@ -77,6 +83,8 @@ const authUserHasAccessToTheChatByChatId = async (chat_id:Types.ObjectId, user:U
     if (!chat!.chat_users.includes(authUserId)) {
         throw new Error("User has no access to the chat");
     }
+
+    return true;
 };
 
 const chatIsEditable = async (chat_id:Types.ObjectId) => {
@@ -84,4 +92,6 @@ const chatIsEditable = async (chat_id:Types.ObjectId) => {
     if (!chat!.is_group_chat) {
         throw new Error("Chat is not editable");
     }
+
+    return true;
 };

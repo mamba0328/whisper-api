@@ -21,12 +21,12 @@ export const getChats = [
 
         const findOptions = {
             // @ts-ignore
-            ...chat_users && { chat_users: { "$in": chat_users.split(",") } },
+            chat_users: { "$in": chat_users.split(",") },
             ...chat_name && { chat_name },
             ...is_group_chat && { is_group_chat }
         };
 
-        const users = await Chats.find(findOptions).skip(+skip! || 0).limit(+limit! || 50);
+        const users = await Chats.find(findOptions).skip(+skip! || 0).limit(+limit! || 50).populate("chat_users");
 
         res.send(users);
     })
