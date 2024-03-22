@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 
 import { Chats } from "../models/Chats";
 
@@ -19,16 +20,37 @@ export const getChats = [
 
         handleValidationErrors(req, res);
 
-        const findOptions = {
-            // @ts-ignore
-            chat_users: { "$in": chat_users.split(",") },
-            ...chat_name && { chat_name },
-            ...is_group_chat && { is_group_chat }
+        const matchStage = {
+            $match: {
+                // @ts-ignore
+                //* converting to ObjectId is essential here, so DT match
+                chat_users: { "$in": chat_users.split(",").map((id:string) => new mongoose.Types.ObjectId(id)) },
+                ...chat_name && { chat_name },
+                ...is_group_chat && { is_group_chat }
+            }
         };
 
-        const users = await Chats.find(findOptions).skip(+skip! || 0).limit(+limit! || 50).populate("chat_users");
+        const lookupStage = {
+            $lookup: {
+                from: "chat_messages",
+                localField: "_id",
+                foreignField: "chat_id",
+                as: "chat_messages",
+                pipeline: [
+                    { $sort: { "created_at": -1 } },
+                    { $limit: 1 }
+                ]
+            }
+        };
 
-        res.send(users);
+        const skipStage = { $skip: +skip! || 0 };
+        const limitStage = { $limit: +limit! || 50 };
+        const pipeline = [matchStage, skipStage, limitStage, lookupStage];
+
+        // @ts-ignore
+        const chats = await Chats.aggregate(pipeline);
+
+        res.send(chats);
     })
 ];
 export const postChat = [
