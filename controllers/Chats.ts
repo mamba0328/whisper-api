@@ -48,7 +48,10 @@ export const getChats = [
                 from: "users",
                 localField: "chat_users",
                 foreignField: "_id",
-                as: "chat_users"
+                as: "chat_users",
+                pipeline: [
+                    { $unset: ["password"] }
+                ]
             }
         };
 
