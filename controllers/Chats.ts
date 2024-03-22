@@ -30,7 +30,7 @@ export const getChats = [
             }
         };
 
-        const lookupStage = {
+        const lookupLastMessageStage = {
             $lookup: {
                 from: "chat_messages",
                 localField: "_id",
@@ -43,9 +43,18 @@ export const getChats = [
             }
         };
 
+        const lookupUsersStage = {
+            $lookup: {
+                from: "users",
+                localField: "chat_users",
+                foreignField: "_id",
+                as: "chat_users"
+            }
+        };
+
         const skipStage = { $skip: +skip! || 0 };
         const limitStage = { $limit: +limit! || 50 };
-        const pipeline = [matchStage, skipStage, limitStage, lookupStage];
+        const pipeline = [matchStage, skipStage, limitStage, lookupLastMessageStage, lookupUsersStage];
 
         // @ts-ignore
         const chats = await Chats.aggregate(pipeline);
