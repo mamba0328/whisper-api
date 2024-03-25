@@ -76,10 +76,12 @@ export const postChat = [
 
         handleValidationErrors(req, res);
 
+        const now = new Date();
         const newChat = await Chats.create({
             ...is_group_chat && { is_group_chat },
             ...chat_name && { chat_name },
-            ...chat_users && { chat_users }
+            ...chat_users && { chat_users },
+            create_at: now.toISOString()
         });
 
         res.send(newChat);

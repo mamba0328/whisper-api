@@ -38,9 +38,11 @@ export const postMessageSeenBy = [
 
         handleValidationErrors(req, res);
 
+        const now = new Date();
         const userSeenMessage = await MessageSeenBy.create({
             user_id,
-            message_id
+            message_id,
+            created_at: now.toISOString()
         });
 
         res.send(userSeenMessage);

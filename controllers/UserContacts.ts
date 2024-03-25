@@ -40,9 +40,12 @@ export const postUserContacts = [
 
         handleValidationErrors(req, res);
 
+
+        const now = new Date();
         const newUserContact = await UserContacts.create({
             user_id,
-            contact_id
+            contact_id,
+            created_at: now.toISOString()
         });
 
         res.send(newUserContact);

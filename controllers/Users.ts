@@ -65,6 +65,7 @@ export const postUsers = [
 
         const encryptedPassword = await bcrypt.hash(<string>password, 10);
 
+        const now = new Date();
         const newUser = await Users.create({
             first_name,
             last_name,
@@ -73,6 +74,7 @@ export const postUsers = [
             email,
             date_of_birth,
             password: encryptedPassword,
+            create_at: now.toISOString(),
             ...user_profile_img && { user_profile_img_id: user_profile_img._id }
         });
 

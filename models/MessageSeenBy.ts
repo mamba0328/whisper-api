@@ -2,12 +2,10 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const now = new Date();
-
 const MessageSeenBySchema = new Schema({
     message_id: { type: Schema.Types.ObjectId, ref: "chat_messages", required: true },
     user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
-    created_at: { type: Schema.Types.Date, default: now.toISOString() }
+    created_at: { type: Schema.Types.Date, default: new Date().toISOString() }
 });
 
 export const MessageSeenBy = mongoose.model("message_seen_by", MessageSeenBySchema);

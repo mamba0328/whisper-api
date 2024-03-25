@@ -40,10 +40,13 @@ export const postChatMessage = [
         if (req.file) {
             message_img = await createEntityForUploadedImg(req.file, MessagesImg);
         }
+
+        const now = new Date();
         const newMessage = await ChatMessages.create({
             user_id,
             chat_id,
             body,
+            created_at: now.toISOString(),
             ...message_img && { img_url: message_img.path }
         });
 

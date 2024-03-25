@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const now = new Date();
-
 const ChatMessagesSchema = new Schema({
     chat_id: { type: Schema.Types.ObjectId, ref: "chats", required: true },
     user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
@@ -12,7 +10,7 @@ const ChatMessagesSchema = new Schema({
     message_img_id: { type: Schema.Types.ObjectId, ref: "messages_img" },
     status: { type: Schema.Types.String, enum: ["new", "edited", "deleted"], default: "new" },
 
-    created_at: { type: Schema.Types.Date, default: now.toISOString() },
+    created_at: { type: Schema.Types.Date, default: new Date().toISOString() },
     updated_at: { type: Schema.Types.Date }
 });
 

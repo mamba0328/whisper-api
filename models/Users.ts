@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const now = new Date();
-
 const UsersSchema = new Schema({
     first_name: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
     last_name: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
@@ -21,7 +19,7 @@ const UsersSchema = new Schema({
 
     is_admin: { type: Schema.Types.Boolean, default: false },
     status: { type: Schema.Types.String, enum: ["active", "deleted", "banned"], default: "active" },
-    created_at: { type: Schema.Types.Date, default: now.toISOString() },
+    created_at: { type: Schema.Types.Date, default: new Date().toISOString() },
     updated_at: { type: Schema.Types.Date }
 });
 
