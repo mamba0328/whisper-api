@@ -9,7 +9,7 @@ const UsersSchema = new Schema({
     date_of_birth: { type: Schema.Types.Date },
     user_profile_img_id: { type: Schema.Types.String, ref: "users_profile_img" },
 
-    phone_number: { type: Schema.Types.String, minLength: 6, maxLength: 12, required: true, unique: true },
+    phone_number: { type: Schema.Types.String, minLength: 5, maxLength: 15, required: true, unique: true },
     email: { type: Schema.Types.String, minLength: 4, maxLength: 100, required: true, unique: true },
     password: { type: Schema.Types.String, minLength: 60, required: true },
 

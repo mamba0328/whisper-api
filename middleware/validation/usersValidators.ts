@@ -19,7 +19,7 @@ export const postValidators = [
     body("last_name").isString().trim().isLength({ min: 1, max: 100 }).escape(),
     body("username").isString().trim().isLength({ min: 1, max: 100 }).escape().bail({ level: "request" }),
     body("date_of_birth").optional().isDate({ format: "YYYY-MM-DD" }),
-    body("phone_number").isString().trim().isLength({ min: 6, max: 12 }).bail({ level: "request" }),
+    body("phone_number").isString().trim().isLength({ min: 5, max: 15 }).bail({ level: "request" }),
     body("email").isString().trim().isLength({ min: 4, max: 100 }).bail({ level: "request" }),
     body("password").isString().isLength({ min: 8, max: 100 }).bail({ level: "request" }),
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
