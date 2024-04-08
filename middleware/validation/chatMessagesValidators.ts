@@ -54,7 +54,7 @@ const authenticatedUserHasAccessToTheMessage = async (message_id:Types.ObjectId,
 
     const message = await ChatMessages.findById(message_id);
 
-    if (user._id !== message!.user_id) {
+    if (user._id.toString() !== message!.user_id.toString()) {
         const error:Error = new Error("User doesnt have access to make this action");
         error.status = 400;
         throw error;
