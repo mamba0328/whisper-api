@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 
 import { Chats } from "../models/Chats";
 
-import { getValidators, postValidators, putValidators, deleteValidators } from "../middleware/validation/chatsValidators";
+import { getValidators, getSingleChatValidator, postValidators, putValidators, deleteValidators } from "../middleware/validation/chatsValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
 
 export const getChats = [
@@ -43,6 +43,18 @@ export const getChats = [
             }
         };
 
+
+        const unwindLastMesssageStage = { $unwind: "$chat_messages" };
+
+        const lookupMessageSeenByStage = {
+            $lookup: {
+                from: "message_seen_by",
+                localField: "chat_messages._id",
+                foreignField: "message_id",
+                as: "message_seen_by"
+            }
+        };
+
         const lookupUsersStage = {
             $lookup: {
                 from: "users",
@@ -55,14 +67,30 @@ export const getChats = [
             }
         };
 
+
         const skipStage = { $skip: +skip! || 0 };
         const limitStage = { $limit: +limit! || 50 };
-        const pipeline = [matchStage, skipStage, limitStage, lookupLastMessageStage, lookupUsersStage];
+        const pipeline = [matchStage, skipStage, limitStage, lookupLastMessageStage, unwindLastMesssageStage, lookupMessageSeenByStage, lookupUsersStage];
 
         // @ts-ignore
         const chats = await Chats.aggregate(pipeline);
 
         res.send(chats);
+    })
+];
+
+export const getSingleChat = [
+    ...getSingleChatValidator,
+    asyncHandler(async (req:Request, res:Response) => {
+        const {
+            id
+        } = req.params;
+
+        handleValidationErrors(req, res);
+
+        const chat = await Chats.findById(id).populate("chat_users");
+
+        res.send(chat);
     })
 ];
 export const postChat = [

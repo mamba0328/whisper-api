@@ -14,6 +14,10 @@ export const getValidators = [
     query("is_group_chat").isString().optional(),
     query("chat_users").custom((chat_users:string[], { req }) => authenticatedUserAmongChatUsers(chat_users, req.user as User))
 ];
+
+export const getSingleChatValidator = [
+    param("id").custom((chat_id:Types.ObjectId, { req }) => authUserHasAccessToTheChatByChatId(chat_id, req.user as User))
+];
 export const postValidators = [
     body("is_group_chat").optional().isBoolean(),
     body("chat_name").optional().isString().escape(),
