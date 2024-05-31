@@ -1,9 +1,9 @@
+import mongoose from "mongoose";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 
-import { Chats } from "../models/Chats";
 import { ChatMessages } from "../models/ChatMessages";
-import { MessagesImg } from "../models/MessagesImg";
+import { MessagesImgs } from "../models/MessagesImgs";
 
 import { getValidators, postValidators, deleteValidators, putValidators } from "../middleware/validation/chatMessagesValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
@@ -11,7 +11,6 @@ import { handleValidationErrors } from "../helpers/handleValidationErrors";
 import { messageImgUpload } from "../middleware/multer/messageImgUpload";
 import { createEntityForUploadedImg } from "../helpers/createEntityForUploadedImg";
 import { deleteFile } from "../helpers/deleteFile";
-import mongoose from "mongoose";
 
 export const getChatMessages = [
     ...getValidators,
@@ -40,11 +39,21 @@ export const getChatMessages = [
             }
         };
 
+        const lookupMessageImgStage = {
+            $lookup: {
+                from: "messages_imgs",
+                localField: "_id",
+                foreignField: "message_id",
+                as: "message_imgs"
+            }
+        };
+
+
         const skipStage = { $skip: +skip! || 0 };
         const limitStage = { $limit: +limit! || 50 };
         const sortStage = { $sort: { "created_at": -1 } };
 
-        const pipeline = [matchStage, skipStage, limitStage, sortStage, lookupMessageSeenByStage];
+        const pipeline = [matchStage, skipStage, limitStage, sortStage, lookupMessageSeenByStage, lookupMessageImgStage];
 
         // @ts-ignore
         const messages = await ChatMessages.aggregate(pipeline);
@@ -62,26 +71,24 @@ export const postChatMessage = [
 
         handleValidationErrors(req, res);
 
-        let message_img;
-        if (req.file) {
-            message_img = await createEntityForUploadedImg(req.file, MessagesImg);
-        }
-
         const now = new Date();
+
         const newMessage = await ChatMessages.create({
             user_id,
             chat_id,
             body,
-            created_at: now.toISOString(),
-            ...message_img && { img_url: message_img.path }
+            created_at: now.toISOString()
         });
+
+        if (req.file) {
+            await createEntityForUploadedImg({ file: req.file, message_id: newMessage._id }, MessagesImgs);
+        }
 
         res.send(newMessage);
     })
 ];
 
 export const putChatMessage = [
-    messageImgUpload.single("message_img"),
     ...putValidators,
     asyncHandler(async (req:Request, res:Response) => {
         const { id } = req.params;
@@ -91,27 +98,14 @@ export const putChatMessage = [
 
         handleValidationErrors(req, res);
 
-        let message_img;
-        if (req.file) {
-            message_img = await createEntityForUploadedImg(req.file, MessagesImg);
-        }
-
         const now = new Date();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const previousEntity = await ChatMessages.findByIdAndUpdate(id, {
+        await ChatMessages.findByIdAndUpdate(id, {
             body,
             status: "edited",
-            ...message_img && { message_img_id: message_img._id },
             updated_at: now.toISOString()
-        }).populate("message_img_id");
-
-        const messageImgWasUpdated = message_img && previousEntity!.message_img_id;
-
-        // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        messageImgWasUpdated && deleteFile(previousEntity.message_img_id.path);
-
+        });
 
         const updatedMessage = await ChatMessages.findById(id).populate("message_img_id");
 
@@ -125,6 +119,12 @@ export const deleteChatMessage = [
         const { id } = req.params;
 
         handleValidationErrors(req, res);
+
+        const message_img = await MessagesImgs.findOne({ chat_message_id: id });
+        if (message_img) {
+            deleteFile(message_img.path);
+            await MessagesImgs.findByIdAndUpdate(message_img._id);
+        }
 
         await ChatMessages.findByIdAndDelete(id);
 

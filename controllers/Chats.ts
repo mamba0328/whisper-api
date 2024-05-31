@@ -38,22 +38,19 @@ export const getChats = [
                 as: "chat_messages",
                 pipeline: [
                     { $sort: { "created_at": -1 } },
-                    { $limit: 1 }
+                    { $limit: 1 },
+                    {
+                        $lookup: {
+                            from: "message_seen_by",
+                            localField: "_id",
+                            foreignField: "message_id",
+                            as: "message_seen_by"
+                        }
+                    }
                 ]
             }
         };
 
-
-        const unwindLastMesssageStage = { $unwind: "$chat_messages" };
-
-        const lookupMessageSeenByStage = {
-            $lookup: {
-                from: "message_seen_by",
-                localField: "chat_messages._id",
-                foreignField: "message_id",
-                as: "message_seen_by"
-            }
-        };
 
         const lookupUsersStage = {
             $lookup: {
@@ -67,10 +64,13 @@ export const getChats = [
             }
         };
 
+        const sortStage = {
+            $sort: { "chat_messages.created_at": -1 }
+        };
 
         const skipStage = { $skip: +skip! || 0 };
         const limitStage = { $limit: +limit! || 50 };
-        const pipeline = [matchStage, skipStage, limitStage, lookupLastMessageStage, unwindLastMesssageStage, lookupMessageSeenByStage, lookupUsersStage];
+        const pipeline = [matchStage, skipStage, limitStage, lookupLastMessageStage, lookupUsersStage, sortStage];
 
         // @ts-ignore
         const chats = await Chats.aggregate(pipeline);

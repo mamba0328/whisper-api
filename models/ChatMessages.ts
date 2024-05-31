@@ -7,7 +7,6 @@ const ChatMessagesSchema = new Schema({
     user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
 
     body: { type: Schema.Types.String, minLength: 1, maxLength: 3000, required: true },
-    message_img_id: { type: Schema.Types.ObjectId, ref: "messages_img" },
     status: { type: Schema.Types.String, enum: ["new", "edited", "deleted"], default: "new" },
 
     created_at: { type: Schema.Types.Date, default: new Date().toISOString() },

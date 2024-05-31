@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 
 const UsersProfileImgSchema = new Schema({
     filename: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
+    user_id: { type: Schema.Types.ObjectId, required: true },
     path: { type: Schema.Types.String, minLength: 1, maxLength: 500, required: true },
     mimetype: { type: Schema.Types.String, minLength: 1, maxLength: 100, required: true },
     created_at: { type: Schema.Types.Date, default: new Date().toISOString() },
