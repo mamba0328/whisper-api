@@ -6,6 +6,8 @@ import logger from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
 import session from "express-session";
+import cors from "cors";
+import MongoStore from "connect-mongo";
 
 import passport from "../passport/passport";
 
@@ -42,6 +44,13 @@ export class AppConstructorService {
     private _configureDefaults = () => {
         this.app.use(logger("dev"));
         this.app.use(express.json());
+        this.app.use(cors({
+            origin: ["http://localhost:9000", process.env.ALLOW_CORS_ORIGIN ?? "", process.env.ALLOW_CORS_ORIGIN_2 ?? ""],
+            methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+            preflightContinue: false,
+            optionsSuccessStatus: 204,
+            credentials: true
+        }));
         this.app.use(express.urlencoded({ extended: false }));
         this.app.use(cookieParser());
         this.app.use(express.static(path.join(__dirname, "public")));
@@ -60,14 +69,27 @@ export class AppConstructorService {
     };
 
     private _configurePassportAuthentication = () => {
+        if (process.env.NODE_ENV === "production") {
+            this.app.set("trust proxy", 1);
+        }
+
         this.app.use(session({
             secret: process.env.PASSPORT_SECRET!,
             saveUninitialized: true,
+            proxy: true,
             resave: true,
+            store: MongoStore.create({
+                mongoUrl: process.env.NODE_ENV === "test" ? process.env.TEST_DB_MONGO_URI : process.env.MONGO_URI,
+                autoRemove: "native"
+            }),
             cookie: {
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV ? "none" : "strict",
+                path: "/",
                 maxAge: 24 * 60 * 60 * 1000 // day = hours * minutes * seconds * milliseconds
             }
         }));
+
 
         this.app.use(passport.initialize());
         this.app.use(passport.session());
