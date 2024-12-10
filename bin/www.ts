@@ -1,13 +1,18 @@
 #!/usr/bin/env node
-import { Error } from "../types/types";
-import app from "../app";
-require('dotenv').config();
+
 /**
  * Module dependencies.
  */
 
-const debug = require("debug")("whisper:server");
+require("dotenv").config();
 const http = require("http");
+import socketio from "socket.io";
+const debug = require("debug")("whisper:server");
+
+import app from "../app";
+import onConnection from "../socketIo/onConnection";
+
+import { Error } from "../types/types";
 
 /**
  * Get port from environment and store in Express.
@@ -21,6 +26,18 @@ app.set("port", port);
  */
 
 const server = http.createServer(app);
+
+/**
+ * Create Socket.io server.
+ */
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+const io = new socketio.Server(server);
+
+io.on("connection", async (socket) => {
+    await onConnection(io, socket);
+});
+
 
 /**
  * Listen on provided port, on all network interfaces.
