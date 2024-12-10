@@ -1,9 +1,15 @@
+
 import { Server, Socket } from "socket.io";
 
 type HandshakeQueryField = string | string[] | undefined;
 type CustomSocket = Socket & { roomId?: HandshakeQueryField, userName?: HandshakeQueryField };
 export default async function onConnection (io:Server, socket:Socket) {
     const { roomId, userName } = socket.handshake.query;
+    //
+    // // @ts-ignore
+    // const user = socket.request.user;
+    // console.log(user);
+
     if (!roomId || !userName) {
         return;
     }
@@ -17,10 +23,4 @@ export default async function onConnection (io:Server, socket:Socket) {
     console.log(`${userName} joined the room ${roomId}`);
 
     await customSocket.join(roomId);
-
-    // // регистрируем обработчики для пользователей
-    // userHandlers(io, socket)
-    //
-    // // регистрируем обработчики для сообщений
-    // messageHandlers(io, socket)
 }

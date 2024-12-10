@@ -5,11 +5,10 @@ import express, { Express, Request, Response } from "express";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
-import session from "express-session";
 import cors from "cors";
-import MongoStore from "connect-mongo";
 
 import passport from "../passport/passport";
+import sessionMiddleware from "../passport/sessionMiddleware";
 
 import indexRouter from "../routes";
 import signInRouter from "../routes/sign-in";
@@ -73,24 +72,7 @@ export class AppConstructorService {
             this.app.set("trust proxy", 1);
         }
 
-        this.app.use(session({
-            secret: process.env.PASSPORT_SECRET!,
-            saveUninitialized: true,
-            proxy: true,
-            resave: true,
-            store: MongoStore.create({
-                mongoUrl: process.env.NODE_ENV === "test" ? process.env.TEST_DB_MONGO_URI : process.env.MONGO_URI,
-                autoRemove: "native"
-            }),
-            cookie: {
-                secure: process.env.NODE_ENV === "production",
-                sameSite: process.env.NODE_ENV ? "none" : "strict",
-                path: "/",
-                maxAge: 24 * 60 * 60 * 1000 // day = hours * minutes * seconds * milliseconds
-            }
-        }));
-
-
+        this.app.use(sessionMiddleware);
         this.app.use(passport.initialize());
         this.app.use(passport.session());
     };
