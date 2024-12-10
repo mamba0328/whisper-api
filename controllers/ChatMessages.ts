@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 
@@ -9,8 +9,11 @@ import { getValidators, postValidators, deleteValidators, putValidators } from "
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
 
 import { messageImgUpload } from "../middleware/multer/messageImgUpload";
+import { createImgSmallCopy } from "../helpers/createImgSmallCopy";
+
 import { createEntityForUploadedImg } from "../helpers/createEntityForUploadedImg";
 import { deleteFile } from "../helpers/deleteFile";
+import { Message } from "../types/types";
 
 export const getChatMessages = [
     ...getValidators,
@@ -67,24 +70,30 @@ export const postChatMessage = [
     messageImgUpload.single("message_img"),
     ...postValidators,
     asyncHandler(async (req:Request, res:Response) => {
-        const { user_id, chat_id, body } : { user_id: string, chat_id:string, body:string } = req.body;
+        const { user_id, chat_id, body } : { user_id: Types.ObjectId, chat_id:Types.ObjectId, body:string } = req.body;
 
         handleValidationErrors(req, res);
 
         const now = new Date();
 
-        const newMessage = await ChatMessages.create({
+        const message:Message = {
             user_id,
             chat_id,
-            body,
+            status: "new", // TODO better types
+            ...body && { body },
             created_at: now.toISOString()
-        });
+        };
+
+        const newMessage = await ChatMessages.create(message);
 
         if (req.file) {
-            await createEntityForUploadedImg({ file: req.file, message_id: newMessage._id }, MessagesImgs);
+            const img = await createEntityForUploadedImg({ file: req.file, message_id: newMessage._id }, MessagesImgs);
+            message.message_imgs = [img];
+
+            createImgSmallCopy(req.file.path);
         }
 
-        res.send(newMessage);
+        res.send(message);
     })
 ];
 

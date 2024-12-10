@@ -1,23 +1,23 @@
-import asyncHandler from "express-async-handler";
+
 import { Request, Response } from "express";
 
-
-import { getValidators } from "../middleware/validation/messagesImgsValidators";
+import { staticValidators } from "../middleware/validation/messagesImgsValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
-import { MessagesImgs } from "../models/MessagesImgs";
 
-
-export const getMessageImg = [
-    ...getValidators,
-    asyncHandler(async (req:Request, res:Response) => {
-        const { id } = req.params;
-
+export const serveImg = [
+    ...staticValidators,
+    (req:Request, res:Response, next:CallableFunction) => {
         handleValidationErrors(req, res);
-
-        const messageImg = await MessagesImgs.findById(id);
-
-        messageImg
-            ? res.sendFile(messageImg.path)
-            : res.send("No message img");
-    })
+        next();
+    },
+    // (req:Request, _:Response, next:CallableFunction) => {
+    //     if (!req.params.filename!.includes("-small")) {
+    //         setTimeout(() => {
+    //             next();
+    //         }, 150000);
+    //     } else {
+    //         next();
+    //     }
+    // },
+    (req:Request, res:Response) => res.sendFile(__dirname.replace("controllers", `/uploads/messages_imgs/${req.params.filename}`))
 ];

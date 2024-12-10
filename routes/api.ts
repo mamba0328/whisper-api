@@ -4,7 +4,7 @@ import usersContactsRouter from "./apiRoutes/users-contacts";
 import chatMessagesRouter from "./apiRoutes/chat-messages";
 import chatsRouter from "./apiRoutes/chats";
 import messageSeenByRouter from "./apiRoutes/message-seen-by";
-import messagesImgsRouter from "./apiRoutes/messages-imgs";
+
 import { isAuth } from "../middleware/authentication /isAuth";
 
 const router = express.Router();
@@ -27,7 +27,6 @@ router.use(chatsRouter);
 // api/message-seen-by
 router.use(messageSeenByRouter);
 
-// api/messages-imgs
-router.use(messagesImgsRouter);
 
 export default router;
+

@@ -30,7 +30,8 @@
         "@stylistic/js/newline-per-chained-cal": "off",
         "@stylistic/js/padded-blocks": "off",
         "@stylistic/js/object-property-newline": "off",
-        "@stylistic/js/array-element-newline": "off"
+        "@stylistic/js/array-element-newline": "off",
+        "@stylistic/js/multiline-ternary": "off"
     },
     "overrides": [
         {

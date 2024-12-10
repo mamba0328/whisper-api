@@ -6,7 +6,7 @@ const ChatMessagesSchema = new Schema({
     chat_id: { type: Schema.Types.ObjectId, ref: "chats", required: true },
     user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
 
-    body: { type: Schema.Types.String, minLength: 1, maxLength: 3000, required: true },
+    body: { type: Schema.Types.String, minLength: 1, maxLength: 3000 },
     status: { type: Schema.Types.String, enum: ["new", "edited", "deleted"], default: "new" },
 
     created_at: { type: Schema.Types.Date, default: new Date().toISOString() },

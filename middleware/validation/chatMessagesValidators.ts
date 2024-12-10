@@ -21,7 +21,7 @@ export const postValidators = [
     body("user_id").isMongoId().custom(async (id:Types.ObjectId) => checkEntityExistsInDataBaseById(id, Users)).bail({ level: "request" }),
     body("user_id").isMongoId().custom(async (id:Types.ObjectId, { req }) => checkUserParticipateInChat(id, req.body.chat_id as Types.ObjectId)).bail({ level: "request" }),
     body("user_id").isMongoId().custom((id:Types.ObjectId, { req }) => authenticatedUserMatchesOneInNewMessage(id, req.user._id as Types.ObjectId)).bail({ level: "request" }),
-    body("body").isString().trim().isLength({ min: 1, max: 3000 }).if(body("message_img").exists()).optional()
+    body("body").if(body("message_img").exists()).optional().isString().trim().isLength({ min: 1, max: 3000 })
 ];
 export const putValidators = [
     param("id").isMongoId().custom(async (id:Types.ObjectId) => await checkEntityExistsInDataBaseById(id, ChatMessages)).bail({ level: "request" }),

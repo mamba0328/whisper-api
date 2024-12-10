@@ -49,6 +49,37 @@ export type Chat= {
     is_group_chat?:boolean
 }
 
+export type MessageSeenBy = {
+    created_at: string,
+    message_id: string,
+    user_id: string,
+    _id: string,
+}
+
+export type FileData = {
+    _id: string,
+    path: string,
+    filename: string,
+    mimetype: string,
+    width: string,
+    height: string,
+}
+
+export type Message = {
+    _id?: Types.ObjectId,
+    chat_id: Types.ObjectId,
+    user_id: Types.ObjectId,
+
+    body?: string | null,
+    status: "new" | "edited" | "deleted",
+
+    message_imgs?: [FileData]
+
+    message_seen_by?: Array<MessageSeenBy>,
+
+    created_at?: Date | string | null,
+    updated_at?: Date | string | null,
+}
 
 export type MessagePayload = {
     user_id: Types.ObjectId | null,

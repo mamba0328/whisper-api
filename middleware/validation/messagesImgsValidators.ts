@@ -4,14 +4,11 @@ import { Chats } from "../../models/Chats";
 import { ChatMessages } from "../../models/ChatMessages";
 import { MessagesImgs } from "../../models/MessagesImgs";
 
-import { checkEntityExistsInDataBaseById } from "../../helpers/checkEntityExistsInDB";
-
 import { Error, User } from "../../types/types";
 import { Types } from "mongoose";
 
-export const getValidators = [
-    param("id").isMongoId().custom(async (message_img_id:Types.ObjectId) => checkEntityExistsInDataBaseById(message_img_id, MessagesImgs)).bail({ level: "request" }),
-    param("id").custom(async (message_img_id:Types.ObjectId, { req }) => authenticatedUserHasAccessToTheChat(message_img_id, req.user as User)).bail({ level: "request" })
+export const staticValidators = [
+    param("filename").custom(async (filename:string, { req }) => authenticatedUserHasAccessToTheChat(filename, req.user as User)).bail({ level: "request" })
 ];
 
 const checkUserParticipateInChat = async (user_id:Types.ObjectId, chat_id:Types.ObjectId) => {
@@ -28,12 +25,13 @@ const checkUserParticipateInChat = async (user_id:Types.ObjectId, chat_id:Types.
 };
 
 
-const authenticatedUserHasAccessToTheChat = async (message_img_id:Types.ObjectId, user:User) => {
+const authenticatedUserHasAccessToTheChat = async (filename:string, user:User) => {
     if (user.is_admin) {
         return true;
     }
 
-    const message_img = await MessagesImgs.findById(message_img_id);
+    const filenameSanitized = filename.replace("-small", "");
+    const message_img = await MessagesImgs.findOne({ filename: filenameSanitized });
     // @ts-ignore
     const chat_message = await ChatMessages.findById(message_img.message_id);
     // @ts-ignore

@@ -14,6 +14,7 @@ import signInRouter from "../routes/sign-in";
 import signUpRouter from "../routes/sign-up";
 import signOutRouter from "../routes/sign-out";
 import apiRouter from "../routes/api";
+import staticRouter from "../routes/static/messages-imgs";
 
 import { connectToMongoDB, disconnectFromMongoDB } from "../db/mongooseConnection";
 import { Error } from "../types/types";
@@ -30,6 +31,7 @@ export class AppConstructorService {
         this._configurePassportAuthentication();
         this._setupUnprotectedRoutes();
         this._setupProtectedRoutes();
+        this._setupStaticRoutes();
         this._killDataBaseConnection();
         this._setup404Handler();
         this._setupErrorHandler();
@@ -80,6 +82,10 @@ export class AppConstructorService {
 
     private _setupProtectedRoutes = () => {
         this.app.use("/api", apiRouter);
+    };
+
+    private _setupStaticRoutes = () => {
+        this.app.use("/", staticRouter);
     };
 
     private _setup404Handler = () => {

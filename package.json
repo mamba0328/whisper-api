@@ -7,7 +7,7 @@
     "build": "npx tsc",
     "build-prod": "npx tsc -p tsconfig.prod.json",
     "start": "node dist/bin/www.js",
-    "dev": "nodemon bin/www.ts",
+    "dev": "nodemon bin/www.ts --include=optional",
     "test-db-seed": "ts-node-esm tests/seed/testSeedDB.ts --forceExit",
     "drop-test-db": "ts-node-esm tests/seed/dropTestDB.ts --forceExit"
   },
@@ -29,6 +29,8 @@
     "multer": "^1.4.5-lts.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
+    "sharp": "^0.33.5",
+    "socket.io": "^4.8.1",
     "supertest": "^6.3.4",
     "ts-node": "^10.9.2"
   },
