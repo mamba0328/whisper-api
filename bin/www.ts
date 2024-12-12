@@ -54,7 +54,6 @@ io.engine.use(onlyForHandshake(passport.session()));
 io.engine.use(
     onlyForHandshake((req:Request, res:Response, next:NextFunction) => {
         if (req.user) {
-            console.log("user");
             next();
         } else {
             res.writeHead(401);
@@ -64,9 +63,7 @@ io.engine.use(
 );
 
 
-io.on("connection", async (socket) => {
-    await onConnection(io, socket);
-});
+io.on("connection", (socket) => onConnection(io, socket));
 
 /**
  * Listen on provided port, on all network interfaces.

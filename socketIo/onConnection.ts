@@ -1,26 +1,31 @@
 
 import { Server, Socket } from "socket.io";
+import { Message } from "../types/types";
+import { ChatMessages } from "../models/ChatMessages";
 
-type HandshakeQueryField = string | string[] | undefined;
-type CustomSocket = Socket & { roomId?: HandshakeQueryField, userName?: HandshakeQueryField };
-export default async function onConnection (io:Server, socket:Socket) {
-    const { roomId, userName } = socket.handshake.query;
-    //
-    // // @ts-ignore
-    // const user = socket.request.user;
-    // console.log(user);
+export default function onConnection (io:Server, socket:Socket) {
+    socket.on("message", async (message:Message, callback:CallableFunction) => {
+        const newMessage = await ChatMessages.create({
+            ...message,
+            status: "new", // TODO better types
+            created_at: new Date().toISOString() // now
+        });
 
-    if (!roomId || !userName) {
-        return;
-    }
+        socket.to(message.chat_id.toString()).emit("message", newMessage);
+        callback(newMessage);
+    });
 
-    const customSocket:CustomSocket = socket;
+    socket.on("enterRoom", async (chatId:string) => {
+        if (!chatId) {
+            return;
+        }
+        await socket.join(chatId);
+    });
 
-    customSocket.roomId = roomId;
-    customSocket.userName = userName;
-
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    console.log(`${userName} joined the room ${roomId}`);
-
-    await customSocket.join(roomId);
+    socket.on("leaveRoom", async (chatId:string) => {
+        if (!chatId) {
+            return;
+        }
+        await socket.leave(chatId);
+    });
 }
