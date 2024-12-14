@@ -2,6 +2,7 @@ import { Socket, Server } from "socket.io";
 import { Message } from "../types/types";
 import { ChatMessages } from "../models/ChatMessages";
 import { Chats } from "../models/Chats";
+import { MessageSeenBy } from "../models/MessageSeenBy";
 
 export default (io:Server, socket:Socket) => {
     socket.on("message", async (message:Message, callback:CallableFunction) => {
@@ -36,6 +37,18 @@ export default (io:Server, socket:Socket) => {
 
 
         callback(newMessage);
+    });
+
+    socket.on("seenMessage", async ({ user_id, message_id, chat_id }) => {
+        const now = new Date();
+
+        await MessageSeenBy.create({
+            user_id,
+            message_id,
+            created_at: now.toISOString()
+        });
+
+        socket.to(chat_id as string).emit("messageWasSeen", message_id);
     });
 
     socket.on("enterRoom", async (chatId:string) => {

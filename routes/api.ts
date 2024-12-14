@@ -3,7 +3,6 @@ import userRouter from "./apiRoutes/users";
 import usersContactsRouter from "./apiRoutes/users-contacts";
 import chatMessagesRouter from "./apiRoutes/chat-messages";
 import chatsRouter from "./apiRoutes/chats";
-import messageSeenByRouter from "./apiRoutes/message-seen-by";
 
 import { isAuth } from "../middleware/authentication /isAuth";
 
@@ -24,8 +23,6 @@ router.use(chatMessagesRouter);
 // api/chats
 router.use(chatsRouter);
 
-// api/message-seen-by
-router.use(messageSeenByRouter);
 
 
 export default router;
