@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const MessageSeenBySchema = new Schema({
+const MessageSeenBySchema = new Schema({ //TODO: WS
     message_id: { type: Schema.Types.ObjectId, ref: "chat_messages", required: true },
     user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
     created_at: { type: Schema.Types.Date, default: new Date().toISOString() }

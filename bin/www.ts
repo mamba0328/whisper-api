@@ -6,18 +6,12 @@
 
 require("dotenv").config();
 import http from "http";
-import socketIo from "socket.io";
 const debug = require("debug")("whisper:server");
 
 import app from "../app";
-
-import onConnection from "../socketIo/onConnection";
-import sessionMiddleware from "../passport/sessionMiddleware";
-import onlyForHandshake from "../passport/socketOnHandshake";
+import initSocket from "../socket/initSocket";
 
 import { Error } from "../types/types";
-import passport from "../passport/passport";
-import { NextFunction, Request, Response } from "express";
 
 /**
  * Get port from environment and store in Express.
@@ -36,34 +30,7 @@ const server = http.createServer(app);
  * Create Socket.io server.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-const io = new socketIo.Server(server, {
-    cors: {
-        origin: process.env.ALLOW_CORS_ORIGIN!,
-        methods: ["GET", "POST"],
-        allowedHeaders: "*",
-        credentials: true
-    },
-    cookie: true,
-    serveClient: false
-});
-
-io.engine.use(onlyForHandshake(sessionMiddleware));
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-io.engine.use(onlyForHandshake(passport.session()));
-io.engine.use(
-    onlyForHandshake((req:Request, res:Response, next:NextFunction) => {
-        if (req.user) {
-            next();
-        } else {
-            res.writeHead(401);
-            res.end();
-        }
-    })
-);
-
-
-io.on("connection", (socket) => onConnection(io, socket));
+initSocket(server);
 
 /**
  * Listen on provided port, on all network interfaces.
