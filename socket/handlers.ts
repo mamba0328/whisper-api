@@ -45,7 +45,7 @@ export default (io:Server, socket:Socket) => {
             }
 
             if (!isReceiverInsideChatRoom) {
-                socket.to(receiverId.toString()).emit("message-notification", newMessage);
+                socket.to(receiverId.toString()).emit("newMessageNotification", newMessage);
             }
         });
 
@@ -83,33 +83,43 @@ export default (io:Server, socket:Socket) => {
         callback(updatedMessage);
     });
 
-    socket.on("seenMessage", async ({ user_id, message_id, chat_id }) => {
+    socket.on("viewMessage", async ({ user_id, message_id, chat_id }, callback) => {
         const now = new Date();
 
-        await MessageSeenBy.create({
+        const messageSeenBy = await MessageSeenBy.create({
             user_id,
             message_id,
             created_at: now.toISOString()
         });
 
-        socket.to(chat_id as string).emit("messageWasSeen", message_id);
+        if (!messageSeenBy) {
+            callback(false);
+            return;
+        }
+
+        socket.to(chat_id as string).emit("messageWasSeen", messageSeenBy);
+        callback(messageSeenBy);
     });
 
-    socket.on("startWriting", async ({ user_id, username, chat_id }) => {
+    socket.on("startWriting", async (chat_id) => {
+        // @ts-ignore
+        const { username, _id: user_id } = socket.request.user;
         const chat = await Chats.findById(chat_id);
         const receivers = chat?.chat_users.filter((receiver) => receiver.toString() !== user_id) ?? [];
 
         receivers.forEach((receiverId) => {
-            socket.to(receiverId.toString()).emit("userIsWriting", username);
+            socket.to(receiverId.toString()).emit("userIsWriting", { user_id, chat_id });
         });
     });
 
-    socket.on("stopWriting", async ({ user_id, username, chat_id }) => {
+    socket.on("stopWriting", async (chat_id) => {
+        // @ts-ignore
+        const { username, _id: user_id } = socket.request.user;
         const chat = await Chats.findById(chat_id);
         const receivers = chat?.chat_users.filter((receiver) => receiver.toString() !== user_id) ?? [];
 
         receivers.forEach((receiverId) => {
-            socket.to(receiverId.toString()).emit("userStoppedWriting", username);
+            socket.to(receiverId.toString()).emit("userStoppedWriting", { user_id, chat_id });
         });
     });
 };
