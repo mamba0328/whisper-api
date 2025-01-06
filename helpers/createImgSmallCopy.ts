@@ -1,6 +1,6 @@
 import sharp from "sharp";
 
-export const createImgSmallCopy = (path:string):boolean => {
+export const createImgSmallCopy = async (path:string):Promise<boolean> => {
     try {
         const smallCopyPath = path.split("/");
 

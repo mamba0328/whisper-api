@@ -9,9 +9,7 @@ import { getValidators, postValidators, deleteValidators, putValidators } from "
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
 
 import { messageImgUpload } from "../middleware/multer/messageImgUpload";
-import { createImgSmallCopy } from "../helpers/createImgSmallCopy";
 
-import { createEntityForUploadedImg } from "../helpers/createEntityForUploadedImg";
 import { deleteFile } from "../helpers/deleteFile";
 import { Message } from "../types/types";
 
@@ -86,13 +84,6 @@ export const postChatMessage = [
 
         const newMessage = await ChatMessages.create(message);
 
-        if (req.file) {
-            const img = await createEntityForUploadedImg({ file: req.file, message_id: newMessage._id }, MessagesImgs);
-            message.message_imgs = [img];
-
-            createImgSmallCopy(req.file.path);
-        }
-
         res.send(message);
     })
 ];
@@ -131,7 +122,7 @@ export const deleteChatMessage = [
 
         const message_img = await MessagesImgs.findOne({ chat_message_id: id });
         if (message_img) {
-            deleteFile(message_img.path);
+            // deleteFile(message_img.path); //TODO
             await MessagesImgs.findByIdAndUpdate(message_img._id);
         }
 

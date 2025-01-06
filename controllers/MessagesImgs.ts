@@ -1,6 +1,7 @@
 
 import { Request, Response } from "express";
 
+import asyncHandler from "express-async-handler";
 import { staticValidators } from "../middleware/validation/messagesImgsValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
 
@@ -19,5 +20,5 @@ export const serveImg = [
     //         next();
     //     }
     // },
-    (req:Request, res:Response) => res.sendFile(__dirname.replace("controllers", `/uploads/messages_imgs/${req.params.filename}`))
+    asyncHandler((req:Request, res:Response) => res.sendFile(__dirname.replace("controllers", `/uploads/messages_imgs/${req.params.filename}`)))
 ];

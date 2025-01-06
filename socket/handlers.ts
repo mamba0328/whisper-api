@@ -1,8 +1,9 @@
 import { Socket, Server } from "socket.io";
-import { Message } from "../types/types";
+import { Message, MessageImg, MessagePayload } from "../types/types";
 import { ChatMessages } from "../models/ChatMessages";
 import { Chats } from "../models/Chats";
 import { MessageSeenBy } from "../models/MessageSeenBy";
+import { MessagesImgs } from "../models/MessagesImgs";
 
 export default (io:Server, socket:Socket) => {
     socket.on("enterRoom", async (chatId:string) => {
@@ -19,20 +20,28 @@ export default (io:Server, socket:Socket) => {
         await socket.leave(chatId);
     });
 
-    socket.on("createMessage", async (message:Message, callback:CallableFunction) => {
+    socket.on("createMessage", async (message:MessagePayload, callback:CallableFunction) => {
         // @ts-ignore
         const sender = socket.request.user;
         const chat = await Chats.findById(message.chat_id);
         const receivers = chat?.chat_users.filter((user_id) => user_id.toString() !== sender._id.toString()) ?? [];
 
-        const newMessage = await ChatMessages.create({
+        const newMessage:Message = await ChatMessages.create({
             ...message,
             status: "new", // TODO better types
             created_at: new Date().toISOString() // now
         });
 
-        socket.to(message.chat_id.toString()).emit("newMessage", newMessage);
+        if (message.message_img) {
+            const img:MessageImg = await MessagesImgs.create({
+                ...message.message_img,
+                message_id: newMessage._id,
+                created_at: new Date().toISOString() // now
+            });
+            newMessage.message_imgs = [img];
+        }
 
+        socket.to(message.chat_id.toString()).emit("newMessage", newMessage);
 
         receivers.forEach((receiverId) => {
             const receiverPersonalRoom = io.sockets.adapter.rooms.get(receiverId.toString());

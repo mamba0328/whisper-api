@@ -8,7 +8,6 @@ import { userProfileImgUpload } from "../middleware/multer/userProfileImgUpload"
 
 import { writesInChatValidators, getValidators, postValidators, deleteValidators, putValidators } from "../middleware/validation/usersValidators";
 import { handleValidationErrors } from "../helpers/handleValidationErrors";
-import { createEntityForUploadedImg } from "../helpers/createEntityForUploadedImg";
 import { deleteFile } from "../helpers/deleteFile";
 
 

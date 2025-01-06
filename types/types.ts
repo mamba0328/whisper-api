@@ -56,14 +56,17 @@ export type MessageSeenBy = {
     _id: string,
 }
 
-export type FileData = {
-    _id: string,
-    path: string,
-    filename: string,
-    mimetype: string,
-    width: string,
-    height: string,
+
+export type CloudinaryResponse = {
+    public_id: string,
+    version: number,
+    signature: string,
 }
+
+export type MessageImg = {
+    _id: Types.ObjectId,
+} & CloudinaryResponse
+
 
 export type Message = {
     _id?: Types.ObjectId,
@@ -73,7 +76,7 @@ export type Message = {
     body?: string | null,
     status: "new" | "edited" | "deleted",
 
-    message_imgs?: [FileData]
+    message_imgs?: [MessageImg]
 
     message_seen_by?: Array<MessageSeenBy>,
 
@@ -82,7 +85,8 @@ export type Message = {
 }
 
 export type MessagePayload = {
-    user_id: Types.ObjectId | null,
-    chat_id: Types.ObjectId | null,
+    user_id: Types.ObjectId,
+    chat_id: Types.ObjectId,
+    message_img: MessageImg,
     body: string,
 }

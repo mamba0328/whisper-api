@@ -3,6 +3,7 @@ import userRouter from "./apiRoutes/users";
 import usersContactsRouter from "./apiRoutes/users-contacts";
 import chatMessagesRouter from "./apiRoutes/chat-messages";
 import chatsRouter from "./apiRoutes/chats";
+import cloudinaryRouter from "./apiRoutes/cloudinary";
 
 import { isAuth } from "../middleware/authentication /isAuth";
 
@@ -23,7 +24,8 @@ router.use(chatMessagesRouter);
 // api/chats
 router.use(chatsRouter);
 
-
+// api/cloudinary
+router.use(cloudinaryRouter);
 
 export default router;
 
